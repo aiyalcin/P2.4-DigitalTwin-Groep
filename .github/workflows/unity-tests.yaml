@@ -1,4 +1,4 @@
-name: Unity Security CI
+name: Unity Security CI (No-CodeQL)
 
 on:
   push:
@@ -6,56 +6,29 @@ on:
 
 env:
   UNITY_DIR: 2.4-UNITY-GROEP
-  DOTNET_VERSION: "8.0.x"
 
 jobs:
 
-  # --------------------------
-  # SAST (C# Code Analysis)
-  # --------------------------
-  codeql:
-    name: CodeQL (C# SAST)
+  # -------------------------
+  # SAST (Static Analysis)
+  # -------------------------
+  semgrep:
+    name: Semgrep SAST (C# Security Scan)
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      security-events: write
-      actions: read
 
     steps:
       - uses: actions/checkout@v4
 
-      # Initialize CodeQL
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
         with:
-          languages: csharp
-          source-root: 2.4-UNITY-GROEP
-
-      # IMPORTANT: Unity cannot use autobuild. Use manual restore/build instead.
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "8.0.x"
-
-      - name: Restore Unity C# projects (if present)
-        run: |
-          find 2.4-UNITY-GROEP -name "*.sln" -exec dotnet restore {} \; || true
-
-      - name: Build C# projects (best effort)
-        run: |
-          find 2.4-UNITY-GROEP -name "*.csproj" -exec dotnet build {} \; || true
-
-      # Analyze
-      - name: Analyze
-        uses: github/codeql-action/analyze@v3
-
+          config: "p/csharp"
 
   # -------------------------
-  # SCA (Vulnerabilities + Secrets)
+  # SCA (Dependencies + Secrets)
   # -------------------------
   trivy-sca:
-    name: Trivy SCA (Unity Project)
+    name: Trivy SCA (Dependencies + Secrets)
     runs-on: ubuntu-latest
 
     steps:
@@ -70,7 +43,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y trivy
 
-      - name: Scan Unity project
+      - name: Scan Unity project (vulns + secrets)
         run: |
           trivy fs \
             --severity HIGH,CRITICAL \
@@ -78,39 +51,35 @@ jobs:
             --scanners vuln,secret \
             "$UNITY_DIR"
 
-
   # -------------------------
   # Unity Package Scan (UPM)
   # -------------------------
   unity-upm:
-    name: Unity Package Scan (UPM)
+    name: Unity Package Manager Scan
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check Unity manifest exists
-        run: |
-          test -f "$UNITY_DIR/Packages/manifest.json"
+      - name: Check Unity manifest
+        run: test -f "$UNITY_DIR/Packages/manifest.json"
 
-      - name: Scan Unity packages with Trivy
+      - name: Scan UPM packages
         run: |
           trivy fs \
             --scanners vuln \
             --severity HIGH,CRITICAL \
             "$UNITY_DIR/Packages" || true
 
-
   # -------------------------
   # SBOM Generation
   # -------------------------
   sbom:
-    name: SBOM (Anchore)
+    name: Generate SBOM (Anchore)
     runs-on: ubuntu-latest
 
     permissions:
       contents: write
-      security-events: write
 
     steps:
       - uses: actions/checkout@v4
@@ -127,23 +96,3 @@ jobs:
         with:
           name: sbom
           path: sbom.json
-
-
-  # -------------------------
-  # .NET restore validation
-  # -------------------------
-  dotnet-check:
-    name: .NET Restore Check
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Restore Unity-generated solutions
-        run: |
-          find "$UNITY_DIR" -name "*.sln" -exec dotnet restore {} \; || true

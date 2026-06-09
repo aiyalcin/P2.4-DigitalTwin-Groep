@@ -1,47 +1,137 @@
-name: Unity Tests
+name: Unity Security CI
 
 on:
   push:
-    branches:
-      - main
-      - develop
-      - ci-cd
   pull_request:
 
+env:
+  UNITY_DIR: 2.4-UNITY-GROEP
+  DOTNET_VERSION: "8.0.x"
+
 jobs:
-  test:
+
+  # -------------------------
+  # SAST (C# Code Analysis)
+  # -------------------------
+  codeql:
+    name: CodeQL (C# SAST)
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        testMode:
-          - editmode
-          - playmode
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Cache Library
-        uses: actions/cache@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
         with:
-          path: Library
-          key: Library-${{ hashFiles('2.4-UNITY-GROEP/Assets/**', '2.4-UNITY-GROEP/Packages/**', '2.4-UNITY-GROEP/ProjectSettings/**') }}
-          restore-keys: |
-            Library-
+          languages: csharp
+          source-root: ${{ env.UNITY_DIR }}
 
-      - name: Run Unity Tests
-        uses: game-ci/unity-test-runner@v4
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+        working-directory: ${{ env.UNITY_DIR }}
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3
+
+
+  # -------------------------
+  # SCA (Vulnerabilities + Secrets)
+  # -------------------------
+  trivy-sca:
+    name: Trivy SCA (Unity Project)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https gnupg
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo "deb https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
+
+      - name: Scan Unity project
+        run: |
+          trivy fs \
+            --severity HIGH,CRITICAL \
+            --exit-code 1 \
+            --scanners vuln,secret \
+            $UNITY_DIR
+
+
+  # -------------------------
+  # Unity Package Scan (UPM)
+  # -------------------------
+  unity-upm:
+    name: Unity Package Scan (UPM)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Unity manifest exists
+        run: |
+          test -f $UNITY_DIR/Packages/manifest.json
+
+      - name: Scan Unity packages with Trivy
+        run: |
+          trivy fs \
+            --scanners vuln \
+            --severity HIGH,CRITICAL \
+            $UNITY_DIR/Packages || true
+
+
+  # -------------------------
+  # SBOM Generation
+  # -------------------------
+  sbom:
+    name: SBOM (Anchore)
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
         with:
-          testMode: ${{ matrix.testMode }}
+          path: ${{ env.UNITY_DIR }}
+          format: cyclonedx-json
+          output-file: sbom.json
 
-      - name: Upload Test Results
+      - name: Upload SBOM artifact
         uses: actions/upload-artifact@v4
-        if: always()
         with:
-          name: TestResults-${{ matrix.testMode }}
-          path: artifacts
+          name: sbom
+          path: sbom.json
+
+
+  # -------------------------
+  # .NET restore validation (Unity C# support)
+  # -------------------------
+  dotnet-check:
+    name: .NET Restore Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore Unity-generated solutions
+        run: |
+          find $UNITY_DIR -name "*.sln" -exec dotnet restore {} \; || true

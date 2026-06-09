@@ -33,7 +33,6 @@ jobs:
 
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
-        working-directory: ${{ env.UNITY_DIR }}
 
       - name: Analyze
         uses: github/codeql-action/analyze@v3
@@ -64,7 +63,7 @@ jobs:
             --severity HIGH,CRITICAL \
             --exit-code 1 \
             --scanners vuln,secret \
-            $UNITY_DIR
+            "$UNITY_DIR"
 
 
   # -------------------------
@@ -79,14 +78,14 @@ jobs:
 
       - name: Check Unity manifest exists
         run: |
-          test -f $UNITY_DIR/Packages/manifest.json
+          test -f "$UNITY_DIR/Packages/manifest.json"
 
       - name: Scan Unity packages with Trivy
         run: |
           trivy fs \
             --scanners vuln \
             --severity HIGH,CRITICAL \
-            $UNITY_DIR/Packages || true
+            "$UNITY_DIR/Packages" || true
 
 
   # -------------------------
@@ -118,7 +117,7 @@ jobs:
 
 
   # -------------------------
-  # .NET restore validation (Unity C# support)
+  # .NET restore validation
   # -------------------------
   dotnet-check:
     name: .NET Restore Check
@@ -134,4 +133,4 @@ jobs:
 
       - name: Restore Unity-generated solutions
         run: |
-          find $UNITY_DIR -name "*.sln" -exec dotnet restore {} \; || true
+          find "$UNITY_DIR" -name "*.sln" -exec dotnet restore {} \; || true

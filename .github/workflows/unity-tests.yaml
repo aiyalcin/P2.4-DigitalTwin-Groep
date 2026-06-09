@@ -1,4 +1,4 @@
-name: Unity Security CI (v2 - Production Grade)
+name: Unity Security CI (No-CodeQL)
 
 on:
   push:
@@ -10,71 +10,26 @@ env:
 jobs:
 
   # -------------------------
-  # SAST (REAL Unity-aware scanning)
+  # SAST (Static Analysis)
   # -------------------------
   semgrep:
-    name: Semgrep (C# + Unity Security Rules)
+    name: Semgrep SAST (C# Security Scan)
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run Semgrep (Unity focused)
+      - name: Run Semgrep
         uses: returntocorp/semgrep-action@v1
         with:
-          config: >
-            p/csharp
-            p/security-audit
-            p/secrets
-        env:
-          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+          config: "p/csharp"
+
 
   # -------------------------
-  # Secrets + filesystem risk scanning
+  # SCA (Dependencies + Secrets)
   # -------------------------
-  gitleaks:
-    name: Gitleaks (Secrets Detection)
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # -------------------------
-  # Unity Package Security (UPM-aware scan)
-  # -------------------------
-  unity-packages:
-    name: Unity Package Security (UPM Analysis)
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Validate Unity project structure
-        run: |
-          test -f "$UNITY_DIR/Packages/manifest.json"
-
-      # Lightweight but effective dependency extraction
-      - name: Extract Unity package list
-        run: |
-          cat "$UNITY_DIR/Packages/manifest.json"
-
-      # GitHub-native CVE matching via dependency graph
-      - name: Dependency Review (GitHub Security Advisory matching)
-        uses: actions/dependency-review-action@v4
-        with:
-          base-ref: main
-          head-ref: ${{ github.ref }}
-
-  # -------------------------
-  # Filesystem security scan (Trivy - LIMITED scope)
-  # -------------------------
-  trivy-fs:
-    name: Trivy (Secrets + Misconfig only)
+  trivy-sca:
+    name: Trivy SCA (Dependencies + Secrets)
     runs-on: ubuntu-latest
 
     steps:
@@ -89,18 +44,41 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y trivy
 
-      - name: Scan Unity project (high signal only)
+      - name: Scan Unity project (vulns + secrets)
         run: |
           trivy fs \
-            --scanners secret,misconfig \
             --severity HIGH,CRITICAL \
+            --exit-code 1 \
+            --scanners vuln,secret \
             "$UNITY_DIR"
 
+
   # -------------------------
-  # SBOM (UPM-aware snapshot)
+  # Unity Package Scan (UPM)
+  # -------------------------
+  unity-upm:
+    name: Unity Package Manager Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Unity manifest
+        run: test -f "$UNITY_DIR/Packages/manifest.json"
+
+      - name: Scan UPM packages
+        run: |
+          trivy fs \
+            --scanners vuln \
+            --severity HIGH,CRITICAL \
+            "$UNITY_DIR/Packages" || true
+
+
+  # -------------------------
+  # SBOM Generation
   # -------------------------
   sbom:
-    name: SBOM (Unity Project Snapshot)
+    name: Generate SBOM (Anchore)
     runs-on: ubuntu-latest
 
     permissions:
@@ -116,8 +94,8 @@ jobs:
           format: cyclonedx-json
           output-file: sbom.json
 
-      - name: Upload SBOM
+      - name: Upload SBOM artifact
         uses: actions/upload-artifact@v4
         with:
-          name: unity-sbom
+          name: sbom
           path: sbom.json

@@ -10,9 +10,9 @@ env:
 
 jobs:
 
-  # -------------------------
+  # --------------------------
   # SAST (C# Code Analysis)
-  # -------------------------
+  # --------------------------
   codeql:
     name: CodeQL (C# SAST)
     runs-on: ubuntu-latest

@@ -24,6 +24,7 @@ jobs:
         with:
           config: "p/csharp"
 
+
   # -------------------------
   # SCA (Dependencies + Secrets)
   # -------------------------
@@ -49,7 +50,10 @@ jobs:
             --severity HIGH,CRITICAL \
             --exit-code 1 \
             --scanners vuln,secret \
-            "$UNITY_DIR"
+            "$UNITY_DIR/Packages" \
+            "$UNITY_DIR/Assets" \
+            "$UNITY_DIR/ProjectSettings"
+
 
   # -------------------------
   # Unity Package Scan (UPM)
@@ -70,6 +74,7 @@ jobs:
             --scanners vuln \
             --severity HIGH,CRITICAL \
             "$UNITY_DIR/Packages" || true
+
 
   # -------------------------
   # SBOM Generation

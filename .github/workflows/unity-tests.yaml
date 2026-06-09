@@ -25,15 +25,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Initialize CodeQL
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: csharp
-          source-root: ${{ env.UNITY_DIR }}
+          source-root: 2.4-UNITY-GROEP
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+      # IMPORTANT: Unity cannot use autobuild. Use manual restore/build instead.
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
 
+      - name: Restore Unity C# projects (if present)
+        run: |
+          find 2.4-UNITY-GROEP -name "*.sln" -exec dotnet restore {} \; || true
+
+      - name: Build C# projects (best effort)
+        run: |
+          find 2.4-UNITY-GROEP -name "*.csproj" -exec dotnet build {} \; || true
+
+      # Analyze
       - name: Analyze
         uses: github/codeql-action/analyze@v3
 

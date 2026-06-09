@@ -66,8 +66,11 @@ public class MLAgentScript : Agent
             Debug.LogError("The number of dropoff positions must match the number of box prefabs.");
             return false;
         }
-
-        return true;
+        else
+        {
+            return true;
+        }
+            
     }
 
     void Setup()

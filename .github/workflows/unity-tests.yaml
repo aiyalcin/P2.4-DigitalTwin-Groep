@@ -50,9 +50,7 @@ jobs:
             --severity HIGH,CRITICAL \
             --exit-code 1 \
             --scanners vuln,secret \
-            "$UNITY_DIR/Packages" \
-            "$UNITY_DIR/Assets" \
-            "$UNITY_DIR/ProjectSettings"
+            "$UNITY_DIR"
 
 
   # -------------------------

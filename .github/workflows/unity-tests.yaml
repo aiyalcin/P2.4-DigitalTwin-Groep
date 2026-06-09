@@ -1,0 +1,46 @@
+name: Unity Tests
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        testMode:
+          - editmode
+          - playmode
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ hashFiles('2.4-UNITY-GROEP/Assets/**', '2.4-UNITY-GROEP/Packages/**', '2.4-UNITY-GROEP/ProjectSettings/**') }}
+          restore-keys: |
+            Library-
+
+      - name: Run Unity Tests
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          testMode: ${{ matrix.testMode }}
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: TestResults-${{ matrix.testMode }}
+          path: artifacts

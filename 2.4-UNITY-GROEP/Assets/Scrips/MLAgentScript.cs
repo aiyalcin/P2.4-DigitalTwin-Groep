@@ -7,7 +7,7 @@ using System.Collections.Generic;
 public class MLAgentScript : Agent
 {
     // --------------------- THESE GAME OBJECT MUST BE CHECKED IN THE TEST FUNCTION --------------------- \\
-    [SerializeField] public Rigidbody agentRigidbody; // Rigidbody component of the MLAgent
+    Rigidbody agentRigidbody; // Rigidbody component of the MLAgent
     [SerializeField] public GameObject boxPickupObject; // Game object representing the box to be sorted
     [SerializeField] public List<GameObject> dropoffPositions = new List<GameObject>(); // Create list of possible dropoff positions and assign them in the inspector
     [SerializeField] public List<GameObject> boxPrefabs = new List<GameObject>(); // Create list of box prefabs and assign them in the inspector
@@ -82,7 +82,7 @@ public class MLAgentScript : Agent
     void Setup()
     {   
         
-        //Vector3 boxPickupPosition = boxPickupObject.transform.position;
+        
     }
 
     public override void CollectObservations(VectorSensor sensor)
@@ -99,7 +99,7 @@ public class MLAgentScript : Agent
         // 2) holding flag
         sensor.AddObservation(holdingBox ? 1f : 0f);
 
-        // 3) Held-target block (3 + 1 + 1 = 5). If not holding, pad with zeros.
+        // 3) Held-target block (5 floats). If not holding, pad with zeros.
         if (holdingBox && heldTarget != null)
         {
             Vector3 localHeldTarget = transform.InverseTransformPoint(heldTarget.position);
@@ -116,7 +116,7 @@ public class MLAgentScript : Agent
             sensor.AddObservation(0f);
         }
 
-        // 4) Nearest-box block (3 + 1 + 1 = 5). If holding, pad with zeros.
+        // 4) Nearest-box block (5 floats). If holding, pad with zeros.
         if (!holdingBox)
         {
             Box nearest = null;

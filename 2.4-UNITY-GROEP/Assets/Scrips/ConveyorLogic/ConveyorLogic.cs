@@ -13,14 +13,12 @@ public class ConveyorLogic : MonoBehaviour
 
     private Vector3 spawnPosition;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        spawnPosition = settings.destination - new Vector3(0, 0, settings.slotCount * settings.slotDistance);
+        spawnPosition = settings.destination - new Vector3(0, 0, (settings.slotCount + 1) * settings.slotDistance);
         ConveyorRound();
     }
 
-    // Update is called once per frame
     void Update()
     {
         ForwardProducts();
@@ -32,6 +30,7 @@ public class ConveyorLogic : MonoBehaviour
         q_Products = GenerateList();
 
         c_Products.Clear();
+        SpawnNextProduct();
     }
 
     public void RemoveFromConveyor(Transform newTransform)
@@ -69,6 +68,17 @@ public class ConveyorLogic : MonoBehaviour
             Vector3 destination = settings.destination - new Vector3(0, 0, i * settings.slotDistance);
 
             c_Products[i].transform.localPosition = Vector3.MoveTowards(c_Products[i].transform.localPosition, destination, settings.speed * Time.deltaTime);
+        }
+
+        if (q_Products.Count > 0)
+        {
+            float lastZ = c_Products[c_Products.Count - 1].transform.localPosition.z;
+            float spawnTriggerZ = spawnPosition.z + settings.slotDistance;
+
+            if (lastZ >= spawnTriggerZ)
+            {
+                SpawnNextProduct();
+            }
         }
     }
 

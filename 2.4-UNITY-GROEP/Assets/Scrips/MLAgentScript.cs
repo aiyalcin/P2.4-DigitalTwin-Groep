@@ -8,17 +8,16 @@ public class MLAgentScript : Agent
 {
     // --------------------- THESE GAME OBJECT MUST BE CHECKED IN THE TEST FUNCTION --------------------- \\
     Rigidbody agentRigidbody; // Rigidbody component of the MLAgent
-    [SerializeField] public GameObject boxPickupObject; // Game object representing the box to be sorted
-    [SerializeField] public List<GameObject> dropoffPositions = new List<GameObject>(); // Create list of possible dropoff positions and assign them in the inspector
-    [SerializeField] public List<GameObject> boxPrefabs = new List<GameObject>(); // Create list of box prefabs and assign them in the inspector
+    [SerializeField] private GameObject boxPickupLocation; // Game object representing the box to be sorted
+    [SerializeField] private BoxObject boxObject; // ScriptableObject containing box type and dropoff mapping
     // ================================================================================================== \\
 
     [Header("Input")]
-    [SerializeField] public InputActionAsset inputActions;
+    [SerializeField] private InputActionAsset inputActions;
     [Header("Movement")]
-    [SerializeField] public float moveSpeed = 0.5f;
-    [SerializeField] public float turnSpeed = 720f;
-    [SerializeField] public float facingOffsetY = 90f;
+    [SerializeField] private float moveSpeed = 0.5f;
+    [SerializeField] private float turnSpeed = 720f;
+    [SerializeField] private float facingOffsetY = 90f;
 
     [Header("Observations")]
     [SerializeField] private float maxDistance = 20f; // used to normalize distances
@@ -48,36 +47,34 @@ public class MLAgentScript : Agent
             Debug.LogError("MLAgentScript requires a Rigidbody component.");
             return false;
         }
-        if (boxPickupObject == null)
+        if (boxPickupLocation == null)
         {
-            Debug.LogError("MLAgentScript requires a box pickup object.");
-            return false;
-        }
-        if (dropoffPositions.Count == 0)
-        {
-            Debug.LogError("MLAgentScript requires at least one dropoff position.");
-            return false;
-        }
-        if(boxPrefabs.Count == 0)
-        {
-            Debug.LogError("MLAgentScript requires at least one box prefab.");
-            return false;
-        }
-        if(dropoffPositions.Count != boxPrefabs.Count)
-        {
-            Debug.LogError("The number of dropoff positions must match the number of box prefabs.");
+            Debug.LogError("MLAgentScript requires a box pickup location object.");
             return false;
         }
         else
         {
             return true;
         }
-            
     }
-
 
     public override void CollectObservations(VectorSensor sensor)
     {
+        //Global observations
+        sensor.AddObservation(transform.position); // Agent's position
+        sensor.AddObservation(holdingBox ? 1 : 0); // Whether the agent is holding a box (1 for true, 0 for false)
+
+        //Situational observations
+        if(holdingBox)
+        {
+            sensor.AddObservation(Vector3.Distance(transform.position, boxObject.dropOffTargetTransform) / maxDistance); // Normalized distance to the box pickup location (to encourage dropping off the box)
+            sensor.AddObservation(boxObject.dropOffTargetTransform); // Dropoff location for the currently held box
+        }
+        else
+        {
+            sensor.AddObservation(boxPickupLocation.transform.position); // Box pickup location
+            sensor.AddObservation(Vector3.Distance(transform.position, boxPickupLocation.transform.position) / maxDistance); // Normalized distance to the box pickup location 
+        }
     }
 
     public override void OnActionReceived(ActionBuffers actions)

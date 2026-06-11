@@ -73,10 +73,9 @@ jobs:
       - name: Check Unity manifest
         run: test -f "$UNITY_DIR/Packages/manifest.json"
 
-      - name: Scan UPM packages
+      - name: Scan UPM packages (correct mode)
         run: |
-          trivy fs \
-            --scanners vuln \
+          trivy config \
             --severity HIGH,CRITICAL \
             --exit-code 1 \
             "$UNITY_DIR/Packages"

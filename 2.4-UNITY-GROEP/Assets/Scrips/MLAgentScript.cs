@@ -17,9 +17,9 @@ public class MLAgentScript : Agent
 
     [Header("Observations")]
     [SerializeField] private float maxDistance = 20f; // used to normalize distances
-    bool holdingBox = false;
+    bool holdingBox = false; // Bool to track whether the agent is currently holding a box
     private BoxObject boxObject; // ScriptableObject containing box type and dropoff mapping
-    private bool isTesting = true; 
+    private bool isTesting = true;  // Flag to disable pre run checks
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()

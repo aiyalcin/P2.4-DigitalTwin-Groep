@@ -1,0 +1,101 @@
+name: Unity Security CI (No-CodeQL)
+
+on:
+  push:
+  pull_request:
+
+env:
+  UNITY_DIR: 2.4-UNITY-GROEP
+
+jobs:
+
+  # -------------------------
+  # SAST (Static Analysis)
+  # -------------------------
+  semgrep:
+    name: Semgrep SAST (C# Security Scan)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: "p/csharp"
+
+
+  # -------------------------
+  # SCA (Dependencies + Secrets)
+  # -------------------------
+  trivy-sca:
+    name: Trivy SCA (Dependencies + Secrets)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https gnupg
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo "deb https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
+
+      - name: Scan Unity project (vulns + secrets)
+        run: |
+          trivy fs \
+            --severity HIGH,CRITICAL \
+            --exit-code 1 \
+            --scanners vuln,secret \
+            "$UNITY_DIR"
+
+
+  # -------------------------
+  # Unity Package Scan (UPM)
+  # -------------------------
+  unity-upm:
+    name: Unity Package Manager Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Unity manifest
+        run: test -f "$UNITY_DIR/Packages/manifest.json"
+
+      - name: Scan UPM packages
+        run: |
+          trivy fs \
+            --scanners vuln \
+            --severity HIGH,CRITICAL \
+            "$UNITY_DIR/Packages" || true
+
+
+  # -------------------------
+  # SBOM Generation
+  # -------------------------
+  sbom:
+    name: Generate SBOM (Anchore)
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          path: ${{ env.UNITY_DIR }}
+          format: cyclonedx-json
+          output-file: sbom.json
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json

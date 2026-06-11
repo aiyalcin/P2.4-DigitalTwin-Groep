@@ -1,4 +1,4 @@
-name: Unity Security CI (No-CodeQL)
+name: Unity Security CI (Proper SCA)
 
 on:
   push:
@@ -9,26 +9,17 @@ env:
 
 jobs:
 
-  # -------------------------
-  # SAST (Static Analysis)
-  # -------------------------
   semgrep:
-    name: Semgrep SAST (C# Security Scan)
+    name: Semgrep SAST
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Run Semgrep
-        uses: returntocorp/semgrep-action@v1
+      - uses: returntocorp/semgrep-action@v1
         with:
           config: p/csharp
 
-  # -------------------------
-  # SCA (Dependencies + Secrets)
-  # -------------------------
-  trivy-sca:
-    name: Trivy SCA (Dependencies + Secrets)
+  sca:
+    name: Unity SCA (Real Dependency Graph)
     runs-on: ubuntu-latest
 
     steps:
@@ -43,73 +34,55 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y trivy
 
-      - name: Scan Unity project (vulns + secrets)
+      # -------------------------
+      # 1. Validate Unity lockfile
+      # -------------------------
+      - name: Validate Unity lockfile
+        run: |
+          test -f "$UNITY_DIR/Packages/packages-lock.json"
+
+      # -------------------------
+      # 2. Generate SBOM (source of truth)
+      # -------------------------
+      - name: Generate SBOM
         run: |
           trivy fs \
-            --scanners vuln,secret \
+            --format cyclonedx \
+            --output sbom.json \
+            "$UNITY_DIR"
+
+      # -------------------------
+      # 3. Vulnerability scan (REAL SCA)
+      # -------------------------
+      - name: Scan SBOM for vulnerabilities
+        run: |
+          trivy sbom \
+            --severity HIGH,CRITICAL \
+            --exit-code 1 \
+            sbom.json
+
+      # -------------------------
+      # 4. Secret scanning
+      # -------------------------
+      - name: Secret scan
+        run: |
+          trivy fs \
+            --scanners secret \
             --severity HIGH,CRITICAL \
             --exit-code 1 \
             "$UNITY_DIR"
 
-  # -------------------------
-  # Unity Package Scan (UPM)
-  # -------------------------
-  unity-upm:
-    name: Unity Package Manager Scan
+  sbom_publish:
+    name: SBOM Artifact
     runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Trivy
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget apt-transport-https gnupg
-          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-          echo "deb https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee /etc/apt/sources.list.d/trivy.list
-          sudo apt-get update
-          sudo apt-get install -y trivy
-
-      - name: Check Unity manifest
-        run: test -f "$UNITY_DIR/Packages/manifest.json"
-
-      - name: Scan UPM packages (correct mode)
-        run: |
-          trivy config \
-            --severity HIGH,CRITICAL \
-            --exit-code 1 \
-            "$UNITY_DIR/Packages"
-
-  # -------------------------
-  # SBOM Generation
-  # -------------------------
-  sbom:
-    name: Generate SBOM (Anchore)
-    runs-on: ubuntu-latest
-
-    needs:
-      - semgrep
-      - trivy-sca
-      - unity-upm
-
+    needs: sca
     if: always()
 
-    permissions:
-      contents: write
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Generate SBOM
-        uses: anchore/sbom-action@v0
-        with:
-          path: ${{ env.UNITY_DIR }}
-          format: cyclonedx-json
-          output-file: sbom.json
-
-      - name: Upload SBOM artifact
+      - name: Upload SBOM
         uses: actions/upload-artifact@v4
         with:
-          name: sbom-${{ github.sha }}
+          name: unity-sbom
           path: sbom.json
-          retention-days: 90

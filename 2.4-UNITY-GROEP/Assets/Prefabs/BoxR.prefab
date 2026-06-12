@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7928526393518116326}
   - component: {fileID: 7948322036204217482}
   - component: {fileID: 8705109597664225804}
+  - component: {fileID: 1011790129419498663}
   m_Layer: 0
   m_Name: BoxR
   m_TagString: Untagged
@@ -112,3 +113,17 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1011790129419498663
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 887143315822600433}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b853f9f644e01143999971fc4922d82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProductIdentity
+  identity: 0
+  location: {x: 0, y: 0, z: 0}

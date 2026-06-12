@@ -2213,9 +2213,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24984cded9cd587489ff3a7d99077c03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DelegateStatus
-  dropOffs: []
+  dropOffs:
+  - {fileID: 1609213536}
+  - {fileID: 2103983829}
   product: {fileID: 0}
-  humenanoid: {fileID: 0}
+  humenanoid: {fileID: 1858551529}
   dropOffLocations: []
   productLocation: {x: 0, y: 0, z: 0}
   productID: 0
@@ -3223,7 +3225,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 800, y: 600}
@@ -5109,6 +5111,11 @@ MonoBehaviour:
   settings: {fileID: 11400000, guid: 5966b46f5137d8c4d855ba6a47fa7533, type: 2}
   c_ProductsRoot: {fileID: 139157174}
   c_Products: []
+--- !u!1 &1609213536 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6021345991247856275, guid: 17fb6e61847466b9b82417afbf86a495, type: 3}
+  m_PrefabInstance: {fileID: 2462559498375705566}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1609213537 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 739537907822387994, guid: 17fb6e61847466b9b82417afbf86a495, type: 3}
@@ -7160,6 +7167,11 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!1 &2103983829 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6319795339165174315, guid: 8e6673dc5454885c49faa02aa308667d, type: 3}
+  m_PrefabInstance: {fileID: 1185819562796780729}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2103983830 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2547744586817137442, guid: 8e6673dc5454885c49faa02aa308667d, type: 3}

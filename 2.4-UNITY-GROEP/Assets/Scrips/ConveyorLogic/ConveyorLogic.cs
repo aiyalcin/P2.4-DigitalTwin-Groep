@@ -47,7 +47,7 @@ public class ConveyorLogic : MonoBehaviour
     /// <param name="newTransform">Target transform where the product will be moved after removal.</param>
     public void RemoveFromConveyor(Transform newTransform)
     {
-        central.product = c_Products[0];
+        central.UpdateProduct(c_Products[0]); //makes this the center product of the delegate [See Delegate Status to get the correct Product Type]
 
         c_Products[0].transform.SetParent(newTransform);
         c_Products[0].transform.localPosition = Vector3.zero;

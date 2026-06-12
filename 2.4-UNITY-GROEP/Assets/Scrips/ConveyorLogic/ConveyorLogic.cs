@@ -19,7 +19,8 @@ public class ConveyorLogic : MonoBehaviour
     [SerializeField] private List<GameObject> q_Products = new List<GameObject>();
 
     [Tooltip("List of products currently active on the conveyor.")]
-    [SerializeField] private List<GameObject> c_Products = new List<GameObject>();
+    public List<GameObject> c_Products = new List<GameObject>();
+    [SerializeField] private MLAgentScript mlAgentScript;
 
     void Update()
     {
@@ -38,7 +39,6 @@ public class ConveyorLogic : MonoBehaviour
         c_Products.Clear();
         SpawnNextProduct();
     }
-
 
     /// <summary>
     /// Removes the front product from the conveyor and assigns it to a target transform.

@@ -9,11 +9,17 @@ public class MLAgentScript : Agent
     // --------------------- THESE GAME OBJECT MUST BE CHECKED IN THE TEST FUNCTION --------------------- \\
     Rigidbody agentRigidbody; // Rigidbody component of the MLAgent
     [SerializeField] private GameObject boxPickupLocation; // Game object representing the box to be sorted
+    [SerializeField] private List<GameObject> dropOffLocations; // List of dropoff locations for the boxes
+    [SerializeField] private CellManager cellManager; // Reference to the CellManager script for accessing dropoff locations
+    [SerializeField] private GameObject currentlyHoldingBoxPrefab; // Prefab for the box currently being held by the agent
     // ================================================================================================== \\
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 0.5f;
     [SerializeField] private float turnSpeed = 720f;
     [SerializeField] private float facingOffsetY = 90f;
+
+    [Header("Input System Heuristic")]
+    private InputSystem_Actions controls;
 
     [Header("Observations")]
     [SerializeField] private float maxDistance = 20f; // used to normalize distances
@@ -21,7 +27,31 @@ public class MLAgentScript : Agent
     private BoxObject boxObject; // ScriptableObject containing box type and dropoff mapping
     private bool isTesting = true;  // Flag to disable pre run checks
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public override void Initialize()
+    {
+        agentRigidbody = GetComponent<Rigidbody>();
+        if (agentRigidbody != null)
+        {
+            agentRigidbody.constraints |= RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        }
+
+        // Initialize the generated controls class instance
+        controls = new InputSystem_Actions();
+    }
+
+    // You MUST enable and disable the Input Action with the Agent's lifecycle
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        controls.Enable();
+    }
+
+    protected override void OnDisable()
+    {
+        base.OnDisable();
+        controls.Disable();
+    }
+
     void Start()
     {
         if (!isTesting)
@@ -32,8 +62,6 @@ public class MLAgentScript : Agent
                 return;
             }
         }
-        agentRigidbody = GetComponent<Rigidbody>();
-        agentRigidbody.constraints |= RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
     }
 
     bool PrerunTests()
@@ -53,6 +81,7 @@ public class MLAgentScript : Agent
             return true;
         }
     }
+
 
     public override void CollectObservations(VectorSensor sensor)
     {
@@ -85,6 +114,17 @@ public class MLAgentScript : Agent
         }
     }
 
+    public override void Heuristic(in ActionBuffers actionsOut)
+    {
+        var continuousActionsOut = actionsOut.ContinuousActions;
+        
+        // Read the 2D input vector (WASD) from the New Input System
+        Vector2 inputVector = controls.Player.Move.ReadValue<Vector2>();
+        Debug.Log($"Keyboard Input Detected: {inputVector}");
+        continuousActionsOut[0] = inputVector.x; // mapped to moveX
+        continuousActionsOut[1] = inputVector.y; // mapped to moveZ
+    }
+
     void MoveAgent(float moveX, float moveZ)
     {
         Vector3 moveDir = new Vector3(moveX, 0, moveZ);
@@ -112,18 +152,25 @@ public class MLAgentScript : Agent
         }
     }
 
+    void OnTriggerEnter(Collider collider)
+    {
+        if(collider.gameObject.CompareTag("PickupZoneTrigger") && !holdingBox) // Pickup box logic
+        {
+            holdingBox = true;
+            //currentlyHoldingBoxPrefab = cellManager.PickupBox(); // Get box prefab and target location from CellManager
+
+            //boxObject.dropOffTargetTransform = currentlyHoldingBoxPrefab.dropOffTargetTransform; // set target dropoff location
+        }
+
+        if(collider.gameObject.CompareTag("DropOffZoneTrigger") && holdingBox) // Dropoff box logic
+        {
+            //
+        }
+    }
 
     // Update is called once per frame
     void Update()
     {
         
-    }
-
-    public class BoxObject : ScriptableObject
-    {
-        // Type/index of this box (maps to a dropoff)
-        public bool boxType;  // (blue / red)
-        // Transform reference to the target dropoff location
-        public Vector3 dropOffTargetTransform;
     }
 }

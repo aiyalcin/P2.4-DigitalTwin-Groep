@@ -15,9 +15,6 @@ public class ConveyorLogic : MonoBehaviour
     [Tooltip("Parent transform under which all active conveyor products are organized.")]
     [SerializeField] private Transform c_ProductsRoot;
 
-    [Tooltip("List of products waiting to be spawned onto the conveyor.")]
-    [SerializeField] private List<GameObject> q_Products = new List<GameObject>();
-
     [Tooltip("List of products currently active on the conveyor.")]
     public List<GameObject> c_Products = new List<GameObject>();
     [SerializeField] private MLAgentScript mlAgentScript;
@@ -33,9 +30,6 @@ public class ConveyorLogic : MonoBehaviour
     /// </summary>
     public void ConveyorRound()
     {
-        q_Products.Clear();
-        q_Products = GenerateList();
-
         c_Products.Clear();
         SpawnNextProduct();
     }
@@ -47,7 +41,7 @@ public class ConveyorLogic : MonoBehaviour
     /// <param name="newTransform">Target transform where the product will be moved after removal.</param>
     public void RemoveFromConveyor(Transform newTransform)
     {
-        central.product = c_Products[0];
+        central.UpdateProduct(c_Products[0]); //makes this the center product of the delegate [See Delegate Status to get the correct Product Type]
 
         c_Products[0].transform.SetParent(newTransform);
         c_Products[0].transform.localPosition = Vector3.zero;
@@ -61,17 +55,17 @@ public class ConveyorLogic : MonoBehaviour
     /// </summary>
     private void SpawnNextProduct()
     {
-        Transform c_transform = c_ProductsRoot.gameObject.transform;
+        Transform c_transform = c_ProductsRoot.transform;
 
-        if (q_Products.Count == 0) { return; }
+        int randomIndex = Random.Range(0, settings.productOptions.Count);
+        GameObject prefab = settings.productOptions[randomIndex];
 
-        GameObject product = Instantiate(q_Products[0], c_transform);
+        GameObject product = Instantiate(prefab, c_transform);
 
         product.transform.localPosition = settings.spawnPosition;
         product.transform.localRotation = Quaternion.identity;
 
         c_Products.Add(product);
-        q_Products.RemoveAt(0);
     }
 
     /// <summary>
@@ -91,40 +85,12 @@ public class ConveyorLogic : MonoBehaviour
             c_Products[i].transform.localPosition = Vector3.MoveTowards(c_Products[i].transform.localPosition, destination, settings.speed * Time.deltaTime);
         }
 
-        if (q_Products.Count > 0)
+        float lastZ = c_Products[c_Products.Count - 1].transform.localPosition.z;
+        float spawnTriggerZ = settings.spawnPosition.z + settings.slotDistance;
+
+        if (lastZ >= spawnTriggerZ)
         {
-            float lastZ = c_Products[c_Products.Count - 1].transform.localPosition.z;
-            float spawnTriggerZ = settings.spawnPosition.z + settings.slotDistance;
-
-            if (lastZ >= spawnTriggerZ)
-            {
-                SpawnNextProduct();
-            }
+            SpawnNextProduct();
         }
-    }
-
-
-    /// <summary>
-    /// Generates a list of products to spawn based on configuration settings.
-    /// If centralized mode is enabled, uses a shared predefined list.
-    /// Otherwise, generates a randomized list from available product options.
-    /// </summary>
-    /// <returns>A list of product prefabs to spawn on the conveyor.</returns>
-    private List<GameObject> GenerateList()
-    {
-        if(settings.centralized)
-        {
-            return settings.productList;
-        }
-
-        List<GameObject> productList = new List<GameObject>();
-
-        for (int i = 0; i < settings.productCount; i++)
-        {
-            int ran = Random.Range(0, settings.productOptions.Count);
-            productList.Add(settings.productOptions[ran]);
-        }
-
-        return productList;
     }
 }

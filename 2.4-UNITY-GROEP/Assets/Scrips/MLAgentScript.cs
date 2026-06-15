@@ -11,8 +11,11 @@ public class MLAgentScript : Agent
     [SerializeField] private GameObject boxPickupLocation; // Game object representing the box to be sorted
     [SerializeField] private List<GameObject> dropOffLocations; // List of dropoff locations for the boxes
     [SerializeField] private CellManager cellManager; // Reference to the CellManager script for accessing dropoff locations
-    [SerializeField] private GameObject currentlyHoldingBoxPrefab; // Prefab for the box currently being held by the agent
+    [SerializeField] private ConveyorLogic conveyor; // Reference to the ConveyorLogic script for conveyor operations
     // ================================================================================================== \\
+    
+    private ProductIdentityEnums.Type currentBoxType; // Enum to track the type of box currently held by the agent
+
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 0.5f;
     [SerializeField] private float turnSpeed = 720f;
@@ -24,6 +27,7 @@ public class MLAgentScript : Agent
     [Header("Observations")]
     [SerializeField] private float maxDistance = 20f; // used to normalize distances
     bool holdingBox = false; // Bool to track whether the agent is currently holding a box
+    private GameObject heldProduct;
     private BoxObject boxObject; // ScriptableObject containing box type and dropoff mapping
     private bool isTesting = true;  // Flag to disable pre run checks
 
@@ -157,9 +161,7 @@ public class MLAgentScript : Agent
         if(collider.gameObject.CompareTag("PickupZoneTrigger") && !holdingBox) // Pickup box logic
         {
             holdingBox = true;
-            //currentlyHoldingBoxPrefab = cellManager.PickupBox(); // Get box prefab and target location from CellManager
-
-            //boxObject.dropOffTargetTransform = currentlyHoldingBoxPrefab.dropOffTargetTransform; // set target dropoff location
+            heldProduct = conveyor.RemoveFromConveyor(agentRigidbody.transform); // Remove the box from the conveyor and keep the live instance
         }
 
         if(collider.gameObject.CompareTag("DropOffZoneTrigger") && holdingBox) // Dropoff box logic

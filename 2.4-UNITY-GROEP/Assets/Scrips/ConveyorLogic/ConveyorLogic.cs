@@ -39,15 +39,21 @@ public class ConveyorLogic : MonoBehaviour
     /// Also updates the central tracking system with the removed product.
     /// </summary>
     /// <param name="newTransform">Target transform where the product will be moved after removal.</param>
-    public void RemoveFromConveyor(Transform newTransform)
+    public GameObject RemoveFromConveyor(Transform newTransform)
     {
-        central.UpdateProduct(c_Products[0]); //makes this the center product of the delegate [See Delegate Status to get the correct Product Type]
+        GameObject product = c_Products[0];
 
-        c_Products[0].transform.SetParent(newTransform);
-        c_Products[0].transform.localPosition = Vector3.zero;
-        c_Products[0].transform.localRotation = Quaternion.identity;
+        product.transform.SetParent(newTransform);
+
+        product.transform.localPosition = Vector3.zero;
+
+        product.transform.localRotation = Quaternion.identity;
 
         c_Products.RemoveAt(0);
+
+        central.UpdateProduct(product);
+
+        return product;
     }
 
     /// <summary>

@@ -17,8 +17,7 @@ public class CellManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        conveyorLogic = conveyorGameObject.GetComponent<ConveyorLogic>();
-        mlAgentScript = MLAgentGameObject.GetComponent<MLAgentScript>();
+        
     }
 
     public void CreateCell(Vector3 position, int boxVariationAmount)

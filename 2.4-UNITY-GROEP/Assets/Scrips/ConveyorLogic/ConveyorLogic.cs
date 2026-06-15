@@ -17,7 +17,6 @@ public class ConveyorLogic : MonoBehaviour
 
     [Tooltip("List of products currently active on the conveyor.")]
     public List<GameObject> c_Products = new List<GameObject>();
-    [SerializeField] private MLAgentScript mlAgentScript;
 
     void Update()
     {

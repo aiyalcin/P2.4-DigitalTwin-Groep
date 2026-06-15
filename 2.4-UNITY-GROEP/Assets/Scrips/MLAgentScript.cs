@@ -17,6 +17,8 @@ public class MLAgentScript : Agent
     // ================================================================================================== \\
     
     private ProductIdentityEnums.Type currentBoxType; // Enum to track the type of box currently held by the agent
+    private Vector3 blueTargetDropOffLocation; // Position of the blue box drop-off location
+    private Vector3 redTargetDropOffLocation; // Position of the red box drop-off location
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 0.5f;
@@ -33,9 +35,18 @@ public class MLAgentScript : Agent
     private BoxObject boxObject; // ScriptableObject containing box type and dropoff mapping
     private bool isTesting = true;  // Flag to disable pre run checks
 
+    void Awake()
+    {
+        controls = new InputSystem_Actions();
+    }
 
-    public override void Initialize()
-    {        
+    void Start()
+    {
+        agentRigidbody = GetComponent<Rigidbody>();
+        agentRigidbody.constraints |= RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        conveyorLogic = conveyorGameObject.GetComponent<ConveyorLogic>();
+        cellManagerScript = cellManager.GetComponent<CellManager>();
+
         if (!isTesting)
         {
             if(!PrerunTests())
@@ -44,17 +55,9 @@ public class MLAgentScript : Agent
                 return;
             }
         }
-        Setup();
-    }
 
-    void Setup()
-    {
-        controls = new InputSystem_Actions();
-        conveyorLogic = conveyorGameObject.GetComponent<ConveyorLogic>();
-        cellManagerScript = cellManager.GetComponent<CellManager>();
-        conveyorLogic.ConveyorRound(); // Start the conveyor with the first product
-        agentRigidbody = GetComponent<Rigidbody>();
-        agentRigidbody.constraints |= RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        conveyorLogic.ConveyorRound();
+        
     }
 
     protected override void OnEnable()
@@ -182,6 +185,7 @@ public class MLAgentScript : Agent
             if (conveyorLogic != null)
             {
                 heldProduct = conveyorLogic.RemoveFromConveyor(agentRigidbody.transform);
+
             }
             else
             {

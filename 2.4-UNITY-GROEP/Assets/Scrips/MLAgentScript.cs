@@ -4,19 +4,24 @@ using Unity.MLAgents;
 using Unity.MLAgents.Sensors;
 using Unity.MLAgents.Actuators;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 public class MLAgentScript : Agent
 {
     // --------------------- THESE GAME OBJECT MUST BE CHECKED IN THE TEST FUNCTION --------------------- \\
     Rigidbody agentRigidbody; // Rigidbody component of the MLAgent
     [SerializeField] private GameObject boxPickupLocation; // Game object representing the box to be sorted
-    [SerializeField] private List<GameObject> dropOffLocations; // List of dropoff locations for the boxes
     [SerializeField] private GameObject cellManager; // Reference to the CellManager script for accessing dropoff locations
     private CellManager cellManagerScript; // Reference to the CellManager script for accessing dropoff locations
     [SerializeField] private GameObject conveyorGameObject; // Reference to the ConveyorLogic script for conveyor operations
     private ConveyorLogic conveyorLogic; // Reference to the ConveyorLogic script for conveyor operations
     // ================================================================================================== \\
     
+
+    [SerializeField] private GameObject debugSphere; // A sphere used for debugging purposes to visualize the target drop-off location
+    private GameObject debugSphereInstance; // Instance of the debug sphere to visualize the target drop-off location
+
     private ProductIdentityEnums.Type currentBoxType; // Enum to track the type of box currently held by the agent
+    private List<Vector3> dropOffLocations;
     private Vector3 blueTargetDropOffLocation; // Position of the blue box drop-off location
     private Vector3 redTargetDropOffLocation; // Position of the red box drop-off location
 
@@ -24,6 +29,7 @@ public class MLAgentScript : Agent
     [SerializeField] private float moveSpeed = 0.5f;
     [SerializeField] private float turnSpeed = 720f;
     [SerializeField] private float facingOffsetY = 90f;
+    [SerializeField] private Vector3 heldBoxLocalOffset = new Vector3(-1f, 0f, 1f);
 
     [Header("Input System Heuristic")]
     private InputSystem_Actions controls;
@@ -57,7 +63,9 @@ public class MLAgentScript : Agent
         }
 
         conveyorLogic.ConveyorRound();
-        
+        dropOffLocations = cellManagerScript.GetDropOffLocations();
+        redTargetDropOffLocation = dropOffLocations[0];
+        blueTargetDropOffLocation = dropOffLocations[1];
     }
 
     protected override void OnEnable()
@@ -180,17 +188,29 @@ public class MLAgentScript : Agent
         if(collider.gameObject.CompareTag("PickupZoneTrigger") && !holdingBox) // Pickup box logic
         {
             Debug.Log("Pickup zone tag matched! Attempting to grab box...");
+            heldProduct = conveyorLogic.RemoveFromConveyor(agentRigidbody.transform);
+            heldProduct.transform.localPosition = heldBoxLocalOffset;
+            heldProduct.transform.localRotation = Quaternion.identity;
+            AssignDropoff((int)heldProduct.GetComponent<ProductIdentity>().identity);
             holdingBox = true;
+        }
+    }
 
-            if (conveyorLogic != null)
-            {
-                heldProduct = conveyorLogic.RemoveFromConveyor(agentRigidbody.transform);
-
-            }
-            else
-            {
-                Debug.LogError("Conveyor reference is missing on the script!");
-            }
+    void AssignDropoff(int boxType)
+    {
+        if(boxType == (int)ProductIdentityEnums.Type.Red)
+        {
+            boxObject = new BoxObject(boxType) {dropOffTargetTransform = redTargetDropOffLocation};
+            debugSphereInstance = Instantiate(debugSphere, redTargetDropOffLocation, Quaternion.identity);
+            Debug.Log($"Debug sphere instantiated at: {redTargetDropOffLocation}");
+            Destroy(debugSphereInstance, 2f); // Destroy the debug sphere after 2 seconds to prevent clutter
+        }
+        else if(boxType == (int)ProductIdentityEnums.Type.Blue)
+        {
+            boxObject = new BoxObject(boxType) {dropOffTargetTransform = blueTargetDropOffLocation};
+            debugSphereInstance = Instantiate(debugSphere, blueTargetDropOffLocation, Quaternion.identity);
+            Debug.Log($"Debug sphere instantiated at: {blueTargetDropOffLocation}");
+            Destroy(debugSphereInstance, 2f); // Destroy the debug sphere after 2 seconds to prevent clutter
         }
     }
 

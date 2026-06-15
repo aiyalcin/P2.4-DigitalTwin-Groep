@@ -10,8 +10,10 @@ public class MLAgentScript : Agent
     Rigidbody agentRigidbody; // Rigidbody component of the MLAgent
     [SerializeField] private GameObject boxPickupLocation; // Game object representing the box to be sorted
     [SerializeField] private List<GameObject> dropOffLocations; // List of dropoff locations for the boxes
-    [SerializeField] private CellManager cellManager; // Reference to the CellManager script for accessing dropoff locations
-    [SerializeField] private ConveyorLogic conveyor; // Reference to the ConveyorLogic script for conveyor operations
+    [SerializeField] private GameObject cellManager; // Reference to the CellManager script for accessing dropoff locations
+    private CellManager cellManagerScript; // Reference to the CellManager script for accessing dropoff locations
+    [SerializeField] private GameObject conveyorGameObject; // Reference to the ConveyorLogic script for conveyor operations
+    private ConveyorLogic conveyorLogic; // Reference to the ConveyorLogic script for conveyor operations
     // ================================================================================================== \\
     
     private ProductIdentityEnums.Type currentBoxType; // Enum to track the type of box currently held by the agent
@@ -31,19 +33,30 @@ public class MLAgentScript : Agent
     private BoxObject boxObject; // ScriptableObject containing box type and dropoff mapping
     private bool isTesting = true;  // Flag to disable pre run checks
 
-    public override void Initialize()
-    {
-        agentRigidbody = GetComponent<Rigidbody>();
-        if (agentRigidbody != null)
-        {
-            agentRigidbody.constraints |= RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-        }
 
-        // Initialize the generated controls class instance
-        controls = new InputSystem_Actions();
+    public override void Initialize()
+    {        
+        if (!isTesting)
+        {
+            if(!PrerunTests())
+            {
+                Application.Quit(); // Quit the application if the tests fail
+                return;
+            }
+        }
+        Setup();
     }
 
-    // You MUST enable and disable the Input Action with the Agent's lifecycle
+    void Setup()
+    {
+        controls = new InputSystem_Actions();
+        conveyorLogic = conveyorGameObject.GetComponent<ConveyorLogic>();
+        cellManagerScript = cellManager.GetComponent<CellManager>();
+        conveyorLogic.ConveyorRound(); // Start the conveyor with the first product
+        agentRigidbody = GetComponent<Rigidbody>();
+        agentRigidbody.constraints |= RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+    }
+
     protected override void OnEnable()
     {
         base.OnEnable();
@@ -56,18 +69,6 @@ public class MLAgentScript : Agent
         controls.Disable();
     }
 
-    void Start()
-    {
-        if (!isTesting)
-        {
-            if(!PrerunTests())
-            {
-                Application.Quit(); // Quit the application if the tests fail
-                return;
-            }
-        }
-    }
-
     bool PrerunTests()
     {
         if(GetComponent<Rigidbody>() == null)
@@ -75,9 +76,24 @@ public class MLAgentScript : Agent
             Debug.LogError("MLAgentScript requires a Rigidbody component.");
             return false;
         }
+        if(cellManager == null)
+        {
+            Debug.LogError("MLAgentScript requires a reference to the CellManager.");
+            return false;
+        }
+        if(conveyorGameObject == null)
+        {
+            Debug.LogError("MLAgentScript requires a reference to the Conveyor GameObject.");
+            return false;
+        }
         if (boxPickupLocation == null)
         {
             Debug.LogError("MLAgentScript requires a box pickup location object.");
+            return false;
+        }
+        if (GetComponent<Rigidbody>() == null)
+        {
+            Debug.LogError("MLAgentScript requires a Rigidbody component.");
             return false;
         }
         else
@@ -108,8 +124,6 @@ public class MLAgentScript : Agent
 
     public override void OnActionReceived(ActionBuffers actions)
     {
-        Debug.Log("Action move x recieved: " + actions.ContinuousActions[0]);
-        Debug.Log("Action move y recieved: " + actions.ContinuousActions[1]);
         float moveX = actions.ContinuousActions[0];
         float moveZ = actions.ContinuousActions[1];
         if (Mathf.Abs(moveX) > 0.01f || Mathf.Abs(moveZ) > 0.01f)
@@ -124,9 +138,8 @@ public class MLAgentScript : Agent
         
         // Read the 2D input vector (WASD) from the New Input System
         Vector2 inputVector = controls.Player.Move.ReadValue<Vector2>();
-        Debug.Log($"Keyboard Input Detected: {inputVector}");
-        continuousActionsOut[0] = inputVector.x; // mapped to moveX
-        continuousActionsOut[1] = inputVector.y; // mapped to moveZ
+        continuousActionsOut[0] = -inputVector.y; // mapped to moveX
+        continuousActionsOut[1] = inputVector.x; // mapped to moveZ
     }
 
     void MoveAgent(float moveX, float moveZ)
@@ -158,15 +171,22 @@ public class MLAgentScript : Agent
 
     void OnTriggerEnter(Collider collider)
     {
+        // 1. Universal log to see if ANY trigger contact is happening
+        Debug.Log($"Trigger entered with object named: {collider.gameObject.name} | Tag: {collider.gameObject.tag}");
+
         if(collider.gameObject.CompareTag("PickupZoneTrigger") && !holdingBox) // Pickup box logic
         {
+            Debug.Log("Pickup zone tag matched! Attempting to grab box...");
             holdingBox = true;
-            heldProduct = conveyor.RemoveFromConveyor(agentRigidbody.transform); // Remove the box from the conveyor and keep the live instance
-        }
 
-        if(collider.gameObject.CompareTag("DropOffZoneTrigger") && holdingBox) // Dropoff box logic
-        {
-            //
+            if (conveyorLogic != null)
+            {
+                heldProduct = conveyorLogic.RemoveFromConveyor(agentRigidbody.transform);
+            }
+            else
+            {
+                Debug.LogError("Conveyor reference is missing on the script!");
+            }
         }
     }
 

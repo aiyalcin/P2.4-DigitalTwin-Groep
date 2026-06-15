@@ -2,44 +2,44 @@
     "name": "root",
     "metadata": {
         "timer_format_version": "0.1.0",
-        "start_time_seconds": "1781288906",
+        "start_time_seconds": "1781528128",
         "python_version": "3.10.12 | packaged by Anaconda, Inc. | (main, Jul  5 2023, 19:01:18) [MSC v.1916 64 bit (AMD64)]",
-        "command_line_arguments": "C:\\Users\\adami\\anaconda3\\envs\\mlagents\\Scripts\\mlagents-learn --run-id=run1 --force",
+        "command_line_arguments": "C:\\Users\\AXL\\anaconda3\\envs\\mlagents\\Scripts\\mlagents-learn --run-id=run1 --force",
         "mlagents_version": "1.1.0",
         "mlagents_envs_version": "1.1.0",
         "communication_protocol_version": "1.5.0",
         "pytorch_version": "2.2.2+cu121",
         "numpy_version": "1.23.5",
-        "end_time_seconds": "1781288924"
+        "end_time_seconds": "1781528161"
     },
-    "total": 18.569347799999377,
+    "total": 33.77898140000002,
     "count": 1,
-    "self": 0.01265400000011141,
+    "self": 0.003339900000014495,
     "children": {
         "run_training.setup": {
-            "total": 0.18383299999914016,
+            "total": 0.02439860000004046,
             "count": 1,
-            "self": 0.18383299999914016
+            "self": 0.02439860000004046
         },
         "TrainerController.start_learning": {
-            "total": 18.372860800000126,
+            "total": 33.751242899999966,
             "count": 1,
-            "self": 0.0005478999992192257,
+            "self": 0.00021639999999933934,
             "children": {
                 "TrainerController._reset_env": {
-                    "total": 18.372291900001073,
+                    "total": 33.751019799999995,
                     "count": 1,
-                    "self": 18.372291900001073
+                    "self": 33.751019799999995
                 },
                 "trainer_threads": {
-                    "total": 2.9000002541579306e-06,
+                    "total": 6.999999868639861e-07,
                     "count": 1,
-                    "self": 2.9000002541579306e-06
+                    "self": 6.999999868639861e-07
                 },
                 "TrainerController._save_models": {
-                    "total": 1.809999957913533e-05,
+                    "total": 5.999999984851456e-06,
                     "count": 1,
-                    "self": 1.809999957913533e-05
+                    "self": 5.999999984851456e-06
                 }
             }
         }

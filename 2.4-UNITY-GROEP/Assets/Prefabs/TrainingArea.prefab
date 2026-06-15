@@ -1581,6 +1581,7 @@ GameObject:
   - component: {fileID: 4321610097162890917}
   - component: {fileID: 2407413400798909402}
   - component: {fileID: 6206141651323809556}
+  - component: {fileID: 4840381811516181554}
   m_Layer: 0
   m_Name: Clanker
   m_TagString: MLAgent
@@ -1764,6 +1765,20 @@ MonoBehaviour:
   turnSpeed: 720
   facingOffsetY: 90
   maxDistance: 20
+--- !u!114 &4840381811516181554
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3763155766600569955}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2db68b66dd67a096c96b668fd4365065, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AreaRestriction
+  minBounds: {x: -15, y: 1, z: -20}
+  maxBounds: {x: 10, y: 1, z: 20}
 --- !u!1 &3771503259583021896
 GameObject:
   m_ObjectHideFlags: 0

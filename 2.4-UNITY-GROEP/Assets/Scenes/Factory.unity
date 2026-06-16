@@ -163,8 +163,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 674fcaafa140417428bbe4513b029997, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CellManager
-  redDropOffLocation: {fileID: 0}
-  blueDropOffLocation: {fileID: 0}
+  redDropOffLocation: {fileID: 519345729}
+  blueDropOffLocation: {fileID: 1002561218}
   conveyorGameObject: {fileID: 713007275}
   MLAgentGameObject: {fileID: 159236203}
 --- !u!1 &8645121
@@ -1431,7 +1431,7 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -2136,7 +2136,7 @@ GameObject:
   - component: {fileID: 1002561219}
   m_Layer: 0
   m_Name: DropoffLocationBlue
-  m_TagString: Untagged
+  m_TagString: DropoffZoneTrigger
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4520,6 +4520,26 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1408248914091274441, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
+      propertyPath: humenanoid
+      value: 
+      objectReference: {fileID: 159236203}
+    - target: {fileID: 1408248914091274441, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
+      propertyPath: dropOffs.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1408248914091274441, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
+      propertyPath: 'dropOffs.Array.data[0]'
+      value: 
+      objectReference: {fileID: 519345728}
+    - target: {fileID: 1408248914091274441, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
+      propertyPath: 'dropOffs.Array.data[1]'
+      value: 
+      objectReference: {fileID: 1002561217}
+    - target: {fileID: 1408248914091274441, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
+      propertyPath: dropOffLocations.Array.size
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2407413400798909402, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
       propertyPath: m_BrainParameters.VectorObservationSize
       value: 15
@@ -4593,8 +4613,12 @@ PrefabInstance:
       value: -4
       objectReference: {fileID: 0}
     - target: {fileID: 6206141651323809556, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
+      propertyPath: central
+      value: 
+      objectReference: {fileID: 903762608}
+    - target: {fileID: 6206141651323809556, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
       propertyPath: moveSpeed
-      value: 1.5
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 6206141651323809556, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
       propertyPath: cellManager

@@ -28,6 +28,7 @@ public class MLAgentScript : Agent
     [SerializeField] private float moveSpeed = 0.5f;
     [SerializeField] private float turnSpeed = 720f;
     [SerializeField] private float facingOffsetY = 90f;
+    
 
     [Header("Input System Heuristic")]
     private InputSystem_Actions controls;

@@ -51,7 +51,7 @@ public class ConveyorLogic : MonoBehaviour
         c_Products.RemoveAt(0);
 
         central.UpdateProduct(product);
-
+        
         return product;
     }
 
@@ -79,7 +79,11 @@ public class ConveyorLogic : MonoBehaviour
     /// </summary>
     private void ForwardProducts()
     {
-        if (c_Products.Count == 0) { return; }
+        if (c_Products.Count == 0)
+        {
+            SpawnNextProduct();
+            return;
+        }
 
         c_Products[0].transform.localPosition = Vector3.MoveTowards(c_Products[0].transform.localPosition, settings.destination, settings.speed * Time.deltaTime);
 

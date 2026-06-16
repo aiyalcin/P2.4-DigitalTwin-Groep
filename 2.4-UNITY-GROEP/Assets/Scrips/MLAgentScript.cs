@@ -18,9 +18,7 @@ public class MLAgentScript : Agent
     
 
     [SerializeField] private GameObject debugSphere; // A sphere used for debugging purposes to visualize the target drop-off location
-    private GameObject debugSphereInstance; // Instance of the debug sphere to visualize the target drop-off location
 
-    private ProductIdentityEnums.Type currentBoxType; // Enum to track the type of box currently held by the agent
     private List<Vector3> dropOffLocations;
     private Vector3 blueTargetDropOffLocation; // Position of the blue box drop-off location
     private Vector3 redTargetDropOffLocation; // Position of the red box drop-off location
@@ -29,7 +27,7 @@ public class MLAgentScript : Agent
     [SerializeField] private float moveSpeed = 0.5f;
     [SerializeField] private float turnSpeed = 720f;
     [SerializeField] private float facingOffsetY = 90f;
-    [SerializeField] private Vector3 heldBoxLocalOffset = new Vector3(-1f, 0f, 1f);
+    [SerializeField] private Transform boxHoldAnchor; 
 
     [Header("Input System Heuristic")]
     private InputSystem_Actions controls;
@@ -50,6 +48,9 @@ public class MLAgentScript : Agent
     {
         agentRigidbody = GetComponent<Rigidbody>();
         agentRigidbody.constraints |= RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        agentRigidbody.constraints |= RigidbodyConstraints.FreezePositionY;
+        agentRigidbody.interpolation = RigidbodyInterpolation.Interpolate;
+        agentRigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         conveyorLogic = conveyorGameObject.GetComponent<ConveyorLogic>();
         cellManagerScript = cellManager.GetComponent<CellManager>();
 
@@ -66,6 +67,16 @@ public class MLAgentScript : Agent
         dropOffLocations = cellManagerScript.GetDropOffLocations();
         redTargetDropOffLocation = dropOffLocations[0];
         blueTargetDropOffLocation = dropOffLocations[1];
+
+        GameObject debugSphereInstanceR; // Instance of the debug sphere to visualize the target drop-off location
+        GameObject debugSphereInstanceB; // Instance of the debug sphere to visualize the target drop-off location
+        Debug.Log($"Red Drop-off Location: {redTargetDropOffLocation}, Blue Drop-off Location: {blueTargetDropOffLocation}");
+        debugSphereInstanceR = Instantiate(debugSphere, redTargetDropOffLocation, Quaternion.identity);
+        debugSphereInstanceB = Instantiate(debugSphere, blueTargetDropOffLocation, Quaternion.identity);
+        Debug.Log($"Debug sphere instantiated at: {redTargetDropOffLocation}");
+        Debug.Log($"Debug sphere instantiated at: {blueTargetDropOffLocation}");
+        Destroy(debugSphereInstanceR, 5f); // Destroy the debug sphere after 5 seconds to prevent clutter
+        Destroy(debugSphereInstanceB, 5f); // Destroy the debug sphere after 5 seconds to prevent clutter
     }
 
     protected override void OnEnable()
@@ -116,24 +127,31 @@ public class MLAgentScript : Agent
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        //Global observations
-        sensor.AddObservation(transform.position); // Agent's position
-        sensor.AddObservation(holdingBox ? 1 : 0); // Whether the agent is holding a box (1 for true, 0 for false)
+        // Global observations.
+        sensor.AddObservation(holdingBox ? 1f : 0f); // Whether the agent is holding a box.
 
-        //Situational observations
-        if(holdingBox)
+        // Relative pickup observation is always present so the vector size stays fixed.
+        sensor.AddObservation((boxPickupLocation.transform.position - transform.position) / maxDistance);
+        sensor.AddObservation(Vector3.Distance(transform.position, boxPickupLocation.transform.position) / maxDistance);
+
+        // Always expose both drop-off locations so the policy can compare them.
+        sensor.AddObservation((redTargetDropOffLocation - transform.position) / maxDistance);
+        sensor.AddObservation((blueTargetDropOffLocation - transform.position) / maxDistance);
+
+        // When a box is held, also expose the correct target drop-off.
+        if (holdingBox)
         {
-            sensor.AddObservation(Vector3.Distance(transform.position, boxObject.dropOffTargetTransform) / maxDistance); // Normalized distance to the box pickup location (to encourage dropping off the box)
-            sensor.AddObservation(boxObject.dropOffTargetTransform); // Dropoff location for the currently held box
+            sensor.AddObservation((boxObject.dropOffTargetTransform - transform.position) / maxDistance);
+            sensor.AddObservation(Vector3.Distance(transform.position, boxObject.dropOffTargetTransform) / maxDistance);
         }
         else
         {
-            sensor.AddObservation(boxPickupLocation.transform.position); // Box pickup location
-            sensor.AddObservation(Vector3.Distance(transform.position, boxPickupLocation.transform.position) / maxDistance); // Normalized distance to the box pickup location 
+            sensor.AddObservation(Vector3.zero);
+            sensor.AddObservation(0f);
         }
     }
 
-    public override void OnActionReceived(ActionBuffers actions)
+    public override void OnActionReceived(ActionBuffers actions) // Called when the agent receives an action from the policy or heuristic
     {
         float moveX = actions.ContinuousActions[0];
         float moveZ = actions.ContinuousActions[1];
@@ -143,7 +161,7 @@ public class MLAgentScript : Agent
         }
     }
 
-    public override void Heuristic(in ActionBuffers actionsOut)
+    public override void Heuristic(in ActionBuffers actionsOut) // Used for manual control of the agent during testing or debugging
     {
         var continuousActionsOut = actionsOut.ContinuousActions;
         
@@ -153,7 +171,7 @@ public class MLAgentScript : Agent
         continuousActionsOut[1] = inputVector.x; // mapped to moveZ
     }
 
-    void MoveAgent(float moveX, float moveZ)
+    void MoveAgent(float moveX, float moveZ) 
     {
         Vector3 moveDir = new Vector3(moveX, 0, moveZ);
     
@@ -162,7 +180,7 @@ public class MLAgentScript : Agent
             moveDir.Normalize();
         }
 
-        transform.position += moveDir * moveSpeed * Time.deltaTime;
+        agentRigidbody.MovePosition(agentRigidbody.position + moveDir * moveSpeed * Time.fixedDeltaTime);
 
         // Rotation for aesthetics
         if (moveDir.sqrMagnitude > 0.001f) 
@@ -172,11 +190,11 @@ public class MLAgentScript : Agent
             Quaternion targetRotation = Quaternion.Euler(0, targetAngle, 0);
 
             // Smoothly interpolate towards the target rotation using turnSpeed
-            transform.rotation = Quaternion.RotateTowards(
-            transform.rotation, 
-            targetRotation, 
-            turnSpeed * Time.deltaTime
-            );
+            agentRigidbody.MoveRotation(Quaternion.RotateTowards(
+                agentRigidbody.rotation,
+                targetRotation,
+                turnSpeed * Time.fixedDeltaTime
+            ));
         }
     }
 
@@ -184,33 +202,47 @@ public class MLAgentScript : Agent
     {
         // 1. Universal log to see if ANY trigger contact is happening
         Debug.Log($"Trigger entered with object named: {collider.gameObject.name} | Tag: {collider.gameObject.tag}");
-
-        if(collider.gameObject.CompareTag("PickupZoneTrigger") && !holdingBox) // Pickup box logic
+        GameObject collidingGameObject = collider.gameObject;
+        if(collidingGameObject.CompareTag("PickupZoneTrigger") && !holdingBox) // Pickup box logic
         {
             Debug.Log("Pickup zone tag matched! Attempting to grab box...");
             heldProduct = conveyorLogic.RemoveFromConveyor(agentRigidbody.transform);
-            heldProduct.transform.localPosition = heldBoxLocalOffset;
+            heldProduct.transform.SetParent(boxHoldAnchor);
+            heldProduct.transform.localPosition = Vector3.zero;
             heldProduct.transform.localRotation = Quaternion.identity;
-            AssignDropoff((int)heldProduct.GetComponent<ProductIdentity>().identity);
+            AssignDropoff(heldProduct.GetComponent<ProductIdentity>().identity);
             holdingBox = true;
+        }
+        if(collidingGameObject.CompareTag("DropoffZoneTrigger") && holdingBox) // Dropoff box logic
+        {
+            Debug.Log("Dropoff zone tag matched! Attempting to drop box...");
+            Debug.Log("Agent is close enough to the drop-off location. Dropping box...");
+            if(collidingGameObject.GetComponent<DropoffZoneScript>().CheckDropoff(heldProduct.GetComponent<ProductIdentity>().identity))
+            {
+                AddReward(1.0f);
+                Debug.Log("Correct box dropped! Reward given.");
+            }
+            else
+            {
+                Debug.Log("Incorrect box dropped! Penalty applied.");
+                AddReward(-1.0f);
+            }
+            Destroy(heldProduct);
+            heldProduct = null;
+            holdingBox = false;
+            Debug.Log("Box dropping done!");
         }
     }
 
-    void AssignDropoff(int boxType)
+    void AssignDropoff(ProductIdentityEnums.Type boxType)
     {
-        if(boxType == (int)ProductIdentityEnums.Type.Red)
+        if(boxType == ProductIdentityEnums.Type.Red)
         {
             boxObject = new BoxObject(boxType) {dropOffTargetTransform = redTargetDropOffLocation};
-            debugSphereInstance = Instantiate(debugSphere, redTargetDropOffLocation, Quaternion.identity);
-            Debug.Log($"Debug sphere instantiated at: {redTargetDropOffLocation}");
-            Destroy(debugSphereInstance, 2f); // Destroy the debug sphere after 2 seconds to prevent clutter
         }
-        else if(boxType == (int)ProductIdentityEnums.Type.Blue)
+        else if(boxType == ProductIdentityEnums.Type.Blue)
         {
             boxObject = new BoxObject(boxType) {dropOffTargetTransform = blueTargetDropOffLocation};
-            debugSphereInstance = Instantiate(debugSphere, blueTargetDropOffLocation, Quaternion.identity);
-            Debug.Log($"Debug sphere instantiated at: {blueTargetDropOffLocation}");
-            Destroy(debugSphereInstance, 2f); // Destroy the debug sphere after 2 seconds to prevent clutter
         }
     }
 

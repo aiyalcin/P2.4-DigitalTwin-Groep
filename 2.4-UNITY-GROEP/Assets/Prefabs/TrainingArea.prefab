@@ -615,7 +615,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 3434
+  m_VersionIndex: 3440
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -1549,7 +1549,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 1413
+  m_VersionIndex: 1419
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -2837,7 +2837,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 5545
+  m_VersionIndex: 5551
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -3193,7 +3193,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 5184
+  m_VersionIndex: 5190
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -4616,8 +4616,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: -0.26, z: 1}
-  m_Center: {x: 6.55, y: 1.14, z: 0}
+  m_Size: {x: 1, y: 0.65, z: 1}
+  m_Center: {x: 6.55, y: 1.37, z: 0}
 --- !u!1001 &6909926598422321999
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4706,8 +4706,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: -0.26, z: 1}
-  m_Center: {x: 6.55, y: 1.14, z: 0}
+  m_Size: {x: 1, y: 0.65, z: 1}
+  m_Center: {x: 6.55, y: 1.37, z: 0}
 --- !u!4 &6172078211179755605 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 739537907822387994, guid: 17fb6e61847466b9b82417afbf86a495, type: 3}

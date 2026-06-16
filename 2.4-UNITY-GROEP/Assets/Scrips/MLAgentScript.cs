@@ -58,6 +58,7 @@ public class MLAgentScript : Agent
     public override void Initialize()
     {
         agentRigidbody = GetComponent<Rigidbody>();
+        agentRigidbody.sleepThreshold = 0;
         agentRigidbody.constraints |= RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         agentRigidbody.constraints |= RigidbodyConstraints.FreezePositionY;
         agentRigidbody.interpolation = RigidbodyInterpolation.Interpolate;
@@ -85,9 +86,9 @@ public class MLAgentScript : Agent
 
     public override void OnEpisodeBegin()
     {
-        // 2. Reset the agent's state and velocity
+        Debug.Log("Episode Began!");
         ChangeState(State.SearchingForBox);
-    
+
         if (agentRigidbody != null)
         {
             agentRigidbody.linearVelocity = Vector3.zero;
@@ -97,14 +98,11 @@ public class MLAgentScript : Agent
         transform.localPosition = startingPosition;
         transform.localRotation = startingRotation;
 
-        // 4. Clean up any box the agent was holding when the episode ended
         if (heldProduct != null)
         {
             Destroy(heldProduct);
             heldProduct = null;
         }
-
-        // 5. Tell external systems to clean up their environments
         if (conveyorLogic != null)
         {
             conveyorLogic.ResetConveyor(); 
@@ -282,6 +280,7 @@ public class MLAgentScript : Agent
     {
         if(collision.gameObject.CompareTag("Bounds"))
         {
+            Debug.Log("Bounds HIT");
             cellManagerScript.BoundsHit();
         }
     }
@@ -290,6 +289,7 @@ public class MLAgentScript : Agent
     {
         if(collision.gameObject.CompareTag("Bounds"))
         {
+            Debug.Log("Bounds STAY");
             cellManagerScript.BoundsStay();
         }
     }

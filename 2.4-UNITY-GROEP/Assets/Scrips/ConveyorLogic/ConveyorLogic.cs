@@ -24,16 +24,6 @@ public class ConveyorLogic : MonoBehaviour
     }
 
     /// <summary>
-    /// Initializes a new conveyor cycle by clearing existing products,
-    /// generating a new spawn queue, and spawning the first product.
-    /// </summary>
-    public void ConveyorRound()
-    {
-        c_Products.Clear();
-        SpawnNextProduct();
-    }
-
-    /// <summary>
     /// Removes the front product from the conveyor and assigns it to a target transform.
     /// Also updates the central tracking system with the removed product.
     /// </summary>
@@ -101,5 +91,22 @@ public class ConveyorLogic : MonoBehaviour
         {
             SpawnNextProduct();
         }
+    }
+    public void ResetConveyor()
+    {
+        // 1. Loop through the list and physically destroy every product in the scene
+        foreach (GameObject product in c_Products)
+        {
+            if (product != null)
+            {
+                Destroy(product);
+            }
+        }
+
+        // 2. Now it is safe to clear the C# tracking list
+        c_Products.Clear();
+
+        // 3. Spawn the first product to restart the cycle
+        SpawnNextProduct();
     }
 }

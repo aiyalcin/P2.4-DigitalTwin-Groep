@@ -45,12 +45,10 @@ public class DropoffZoneScript : MonoBehaviour
             heldBox = agent.PassBox(boxAnchor);
             if (CheckDropoff(heldBox.GetComponent<ProductIdentity>().identity))
             {
-                Debug.Log("Correct box dropped off");
                 cellManagerScript.DropoffHit(true);
             }
             else
             {
-                Debug.Log("Incorrect box dropped off");
                 cellManagerScript.DropoffHit(false);
             }
             isOccupied = true;

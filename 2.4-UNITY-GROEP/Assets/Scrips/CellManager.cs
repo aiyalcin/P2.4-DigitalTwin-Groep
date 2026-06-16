@@ -25,7 +25,11 @@ public class CellManager : MonoBehaviour
     public void BoundsHit()
     {
         mLAgentScript.AddReward(scoringParameters.OutOfBoundsPenalty);
-        mLAgentScript.EndEpisode();
+    }
+
+    public void BoundsStay()
+    {
+        mLAgentScript.AddReward(scoringParameters.OutOfBoundsStayPenalty);
     }
 
     public List<Vector3> GetDropOffLocations()
@@ -49,23 +53,20 @@ public class CellManager : MonoBehaviour
             previousDistanceToTarget = currentDistanceToTarget;
             return;
         }
-
         float distanceDelta = previousDistanceToTarget - currentDistanceToTarget;
         mLAgentScript.AddReward(distanceDelta * scoringParameters.ProgressRewardScale);
-        Debug.Log($"Applied reward: {distanceDelta * scoringParameters.ProgressRewardScale}");
         previousDistanceToTarget = currentDistanceToTarget;
     }
 
     public void BoxPickedUp()
     {
         mLAgentScript.AddReward(scoringParameters.PickupBoxReward);
-        Debug.Log($"Applied reward: {scoringParameters.PickupBoxReward}");
+        ResetDistanceTracking();
     }
 
     public void DropoffHit(bool isCorrect)
     {
         mLAgentScript.AddReward(isCorrect ? scoringParameters.CorrectBoxDeliveryReward : scoringParameters.WrongBoxDeliveryPenalty);
-        Debug.Log($"Applied reward: " + (isCorrect ? scoringParameters.CorrectBoxDeliveryReward : scoringParameters.WrongBoxDeliveryPenalty));
         mLAgentScript.EndEpisode();
     }
 

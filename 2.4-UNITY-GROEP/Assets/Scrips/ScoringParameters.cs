@@ -13,8 +13,9 @@ public class ScoringParameters : ScriptableObject
     [Tooltip("Reward for successfully picking up a box")]
     public float PickupBoxReward = 0.1f;
     [Tooltip("Penalty for going out of bounds")]
-    public float OutOfBoundsPenalty = -1;
-
+    public float OutOfBoundsPenalty = -0.1f;
+    [Tooltip("Penalty for staying out of bounds")]
+    public float OutOfBoundsStayPenalty = -0.01f;
     [Header("Target proximity scoring")]
     [Tooltip("Scale at which proximity to target gives points")]
     public float ProgressRewardScale = 0.1f;

@@ -2,22 +2,22 @@
     "SortingBehaviour": {
         "checkpoints": [
             {
-                "steps": 6144,
-                "file_path": "results\\run1\\SortingBehaviour\\SortingBehaviour-6144.onnx",
+                "steps": 22144,
+                "file_path": "results\\run1\\SortingBehaviour\\SortingBehaviour-22144.onnx",
                 "reward": null,
-                "creation_time": 1781619399.322919,
+                "creation_time": 1781642937.0815656,
                 "auxillary_file_paths": [
-                    "results\\run1\\SortingBehaviour\\SortingBehaviour-6144.pt"
+                    "results\\run1\\SortingBehaviour\\SortingBehaviour-22144.pt"
                 ]
             }
         ],
         "final_checkpoint": {
-            "steps": 6144,
+            "steps": 22144,
             "file_path": "results\\run1\\SortingBehaviour.onnx",
             "reward": null,
-            "creation_time": 1781619399.322919,
+            "creation_time": 1781642937.0815656,
             "auxillary_file_paths": [
-                "results\\run1\\SortingBehaviour\\SortingBehaviour-6144.pt"
+                "results\\run1\\SortingBehaviour\\SortingBehaviour-22144.pt"
             ]
         }
     },

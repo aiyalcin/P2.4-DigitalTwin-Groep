@@ -16,8 +16,10 @@ public class MLAgentScript : Agent
     private ConveyorLogic conveyorLogic; // Reference to the ConveyorLogic script for conveyor operations
     [SerializeField] private Transform boxHoldAnchor; // Transform representing the position where the agent holds the box
     [SerializeField] private DelegateStatus central;
+
     // ================================================================================================== \\
-    
+    private Vector3 startingPosition;
+    private Quaternion startingRotation;
     private List<Vector3> dropOffLocations;
     private Vector3 blueTargetDropOffLocation; // Position of the blue box drop-off location
     private Vector3 redTargetDropOffLocation; // Position of the red box drop-off location
@@ -53,7 +55,7 @@ public class MLAgentScript : Agent
         SetupLineRenderer();
     }
 
-    void Start()
+    public override void Initialize()
     {
         agentRigidbody = GetComponent<Rigidbody>();
         agentRigidbody.constraints |= RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
@@ -71,13 +73,47 @@ public class MLAgentScript : Agent
                 return;
             }
         }
-
-        conveyorLogic.ConveyorRound();
+        startingPosition = transform.localPosition; 
+        startingRotation = transform.localRotation;
+        conveyorLogic.ResetConveyor();
         dropOffLocations = cellManagerScript.GetDropOffLocations();
         redTargetDropOffLocation = dropOffLocations[0];
         blueTargetDropOffLocation = dropOffLocations[1];
-
+        
         cellManagerScript.ResetDistanceTracking();
+    }
+
+    public override void OnEpisodeBegin()
+    {
+        // 2. Reset the agent's state and velocity
+        ChangeState(State.SearchingForBox);
+    
+        if (agentRigidbody != null)
+        {
+            agentRigidbody.linearVelocity = Vector3.zero;
+            agentRigidbody.angularVelocity = Vector3.zero;
+        }   
+
+        transform.localPosition = startingPosition;
+        transform.localRotation = startingRotation;
+
+        // 4. Clean up any box the agent was holding when the episode ended
+        if (heldProduct != null)
+        {
+            Destroy(heldProduct);
+            heldProduct = null;
+        }
+
+        // 5. Tell external systems to clean up their environments
+        if (conveyorLogic != null)
+        {
+            conveyorLogic.ResetConveyor(); 
+        }
+
+        if (cellManagerScript != null)
+        {
+            cellManagerScript.ResetDistanceTracking();
+        }
     }
 
     protected override void OnEnable()
@@ -223,21 +259,38 @@ public class MLAgentScript : Agent
         GameObject collidingGameObject = collider.gameObject;
         if(collidingGameObject.CompareTag("PickupZoneTrigger") && currentState == State.SearchingForBox) // Pickup box logic
         {
-            Debug.Log("Pickup zone tag matched! Attempting to grab box...");
+            heldProduct = conveyorLogic.RemoveFromConveyor(boxHoldAnchor);
+            Rigidbody boxRb = heldProduct.GetComponent<Rigidbody>();
+            if (boxRb != null) {
+                boxRb.isKinematic = true; // Stops the engine from calculating physics for the box
+            }
 
-            heldProduct = conveyorLogic.RemoveFromConveyor(agentRigidbody.transform);
-            heldProduct.transform.SetParent(boxHoldAnchor);
-            heldProduct.transform.localPosition = Vector3.zero;
-            heldProduct.transform.localRotation = Quaternion.identity;
+            Collider boxCollider = heldProduct.GetComponent<Collider>();
+            if (boxCollider != null) {
+                boxCollider.enabled = false; // Prevents overlapping with the Agent
+            }
             ProductIdentityEnums.Type boxType = heldProduct.GetComponent<ProductIdentity>().identity;
             AssignDropoff(boxType);
 
             ChangeState(State.CarryingBox);
             cellManagerScript.BoxPickedUp();
         }
-        if(collidingGameObject.CompareTag("Bounds"))
+        
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if(collision.gameObject.CompareTag("Bounds"))
         {
             cellManagerScript.BoundsHit();
+        }
+    }
+
+    void OnCollisionStay(Collision collision)
+    {
+        if(collision.gameObject.CompareTag("Bounds"))
+        {
+            cellManagerScript.BoundsStay();
         }
     }
 

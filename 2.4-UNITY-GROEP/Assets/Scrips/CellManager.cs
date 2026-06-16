@@ -3,14 +3,12 @@ using System.Collections.Generic;
 
 public class CellManager : MonoBehaviour
 {
-    [SerializeField] private List<GameObject> dropOffLocationObjects; // List of dropoff locations for the boxes
-    [SerializeField] private List<GameObject> boxPrefabs; 
-    [SerializeField] private ConveyorLogic conveyor;
-    [SerializeField] private GameObject MLAgent;
-    private BoxObject boxObject;
+    [SerializeField] private Transform redDropOffLocation;
+    [SerializeField] private Transform blueDropOffLocation;
 
-
-    public DropOffObject dropOffObject;
+    [SerializeField] private GameObject conveyorGameObject;
+    private ConveyorLogic conveyorLogic;
+    [SerializeField] private GameObject MLAgentGameObject;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -18,16 +16,21 @@ public class CellManager : MonoBehaviour
         
     }
 
-    public void CreateCell(Vector3 position, int boxVariationAmount)
-    {
-        //
-    }
-
-    
-
     // Update is called once per frame
     void Update()
     {
         
     }
+
+    public List<Vector3> GetDropOffLocations()
+    {
+        List<Vector3> dropOffLocations = new List<Vector3>
+        {
+            redDropOffLocation.position,
+            blueDropOffLocation.position
+        };
+        return dropOffLocations;
+    }
+
+    
 }

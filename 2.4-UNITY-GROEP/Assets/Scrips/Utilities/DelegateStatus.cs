@@ -28,7 +28,7 @@ public class DelegateStatus : MonoBehaviour
     public Vector3 productLocation;
 
     [Tooltip("Type/identity of the currently tracked product.")]
-    public ProductIdentityEnums.Type productType;
+    public int productID;
 
     [Tooltip("Current world position of the tracked humanoid.")]
     public Vector3 humenanoidLocation;
@@ -127,6 +127,6 @@ public class DelegateStatus : MonoBehaviour
         product = newProduct;
 
         ProductIdentity identity = product.GetComponent<ProductIdentity>();
-        productType = identity.identity;
+        productID = (int) identity.identity;
     }
 }

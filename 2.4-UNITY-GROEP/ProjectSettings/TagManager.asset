@@ -6,6 +6,7 @@ TagManager:
   tags:
   - MLAgent
   - PickupZoneTrigger
+  - DropoffZoneTrigger
   layers:
   - Default
   - TransparentFX

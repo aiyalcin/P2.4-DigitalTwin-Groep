@@ -2,10 +2,10 @@ using UnityEngine;
 
 public class BoxObject
 {
-    public int boxType;
+    public ProductIdentityEnums.Type boxType;
     public Vector3 dropOffTargetTransform;
 
-    public BoxObject(int type)
+    public BoxObject(ProductIdentityEnums.Type type)
     {
         boxType = type;
         dropOffTargetTransform = Vector3.zero;

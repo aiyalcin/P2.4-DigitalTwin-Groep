@@ -3,13 +3,17 @@ using UnityEngine;
 public class DropoffZoneScript : MonoBehaviour
 {
     public ProductIdentityEnums.Type identity;
+    
     [SerializeField] private Transform boxAnchor;
+    [SerializeField] private GameObject CellManager;
+    CellManager cellManagerScript;
     private GameObject heldBox;
+    
     private bool isOccupied = false;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        cellManagerScript = CellManager.GetComponent<CellManager>();
     }
 
     // Update is called once per frame
@@ -42,12 +46,12 @@ public class DropoffZoneScript : MonoBehaviour
             if (CheckDropoff(heldBox.GetComponent<ProductIdentity>().identity))
             {
                 Debug.Log("Correct box dropped off");
-                agent.AddReward(1.0f);
+                cellManagerScript.DropoffHit(true);
             }
             else
             {
                 Debug.Log("Incorrect box dropped off");
-                agent.AddReward(-1.0f);
+                cellManagerScript.DropoffHit(false);
             }
             isOccupied = true;
         }

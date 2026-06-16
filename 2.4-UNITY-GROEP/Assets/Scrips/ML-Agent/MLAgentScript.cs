@@ -32,8 +32,10 @@ public class MLAgentScript : Agent
 
     [Header("Observations")]
     [SerializeField] private float maxDistance = 20f; // used to normalize distances
-    [SerializeField] private float stepPenalty = 0.001f; // Small penalty applied each step to encourage efficiency
-    [SerializeField] private float progressRewardScale = 0.1f; // Scale for the distance-based shaping reward to encourage progress towards the target
+    [Header("Visualizations")]
+    private LineRenderer targetLine;
+    [SerializeField] private Color searchingColor = Color.yellow;
+    [SerializeField] private Color carryingColor = Color.green;
     public enum State
     {
         SearchingForBox,
@@ -41,14 +43,14 @@ public class MLAgentScript : Agent
     }
     public State currentState = State.SearchingForBox; // Track the current state of the agent
     private GameObject heldProduct;
-    private Collider[] heldProductColliders;
     private BoxObject boxObject; // ScriptableObject containing box type and dropoff mapping
     private bool isTesting = false;  // Flag to disable pre run checks
-    private float previousDistanceToTarget = Mathf.Infinity; // Track the previous distance to the target drop-off location for reward shaping
 
-    void Awake()
+    new void Awake()
     {
         controls = new InputSystem_Actions();
+        targetLine = GetComponent<LineRenderer>();
+        SetupLineRenderer();
     }
 
     void Start()
@@ -75,7 +77,7 @@ public class MLAgentScript : Agent
         redTargetDropOffLocation = dropOffLocations[0];
         blueTargetDropOffLocation = dropOffLocations[1];
 
-        ResetDistanceTracking();
+        cellManagerScript.ResetDistanceTracking();
     }
 
     protected override void OnEnable()
@@ -122,10 +124,7 @@ public class MLAgentScript : Agent
             Debug.LogError("MLAgentScript requires a Rigidbody component.");
             return false;
         }
-        else
-        {
-            return true;
-        }
+        return true;
     }
 
 
@@ -145,8 +144,8 @@ public class MLAgentScript : Agent
         // When a box is held, also expose the correct target drop-off.
         if (currentState == State.CarryingBox)
         {
-            sensor.AddObservation((boxObject.dropOffTargetTransform - transform.position) / maxDistance);
-            sensor.AddObservation(Vector3.Distance(transform.position, boxObject.dropOffTargetTransform) / maxDistance);
+            sensor.AddObservation((boxObject.dropOffTargetVector3 - transform.position) / maxDistance);
+            sensor.AddObservation(Vector3.Distance(transform.position, boxObject.dropOffTargetVector3) / maxDistance);
         }
         else
         {
@@ -157,7 +156,6 @@ public class MLAgentScript : Agent
 
     public override void OnActionReceived(ActionBuffers actions) // Called when the agent receives an action from the policy or heuristic
     {
-        AddReward(-stepPenalty); // Small negative reward to encourage efficiency
         float moveX = actions.ContinuousActions[0];
         float moveZ = actions.ContinuousActions[1];
         if (Mathf.Abs(moveX) > 0.01f || Mathf.Abs(moveZ) > 0.01f)
@@ -165,39 +163,19 @@ public class MLAgentScript : Agent
             MoveAgent(moveX, moveZ);
         }
 
-        ApplyDistanceShapingReward();
+        cellManagerScript.ActionRecievedCall();
     }
 
     private void ChangeState(State newState) // Helper function to change the agent's state and reset relevant tracking variables for reward shaping
     {
         currentState = newState;
-        ResetDistanceTracking();
+        cellManagerScript.ResetDistanceTracking();
     }
 
-    private void ResetDistanceTracking()
-    {
-        previousDistanceToTarget = Vector3.Distance(transform.position, GetActiveTargetPosition());
-    }
-
-    private void ApplyDistanceShapingReward()
-    {
-        float currentDistanceToTarget = Vector3.Distance(transform.position, GetActiveTargetPosition());
-
-        if (previousDistanceToTarget == Mathf.Infinity)
-        {
-            previousDistanceToTarget = currentDistanceToTarget;
-            return;
-        }
-
-        float distanceDelta = previousDistanceToTarget - currentDistanceToTarget;
-        AddReward(distanceDelta * progressRewardScale);
-        previousDistanceToTarget = currentDistanceToTarget;
-    }
-
-    private Vector3 GetActiveTargetPosition()
+    public Vector3 GetActiveTargetPosition()
     {
         return currentState == State.CarryingBox
-            ? boxObject.dropOffTargetTransform
+            ? boxObject.dropOffTargetVector3
             : boxPickupLocation.transform.position;
     }
 
@@ -214,22 +192,24 @@ public class MLAgentScript : Agent
     void MoveAgent(float moveX, float moveZ) 
     {
         Vector3 moveDir = new Vector3(moveX, 0, moveZ);
-    
+
         if (moveDir.magnitude > 1f)
         {
             moveDir.Normalize();
         }
 
-        agentRigidbody.MovePosition(agentRigidbody.position + moveDir * moveSpeed * Time.fixedDeltaTime);
+        // Set velocity directly instead of MovePosition to let physics handle wall collisions naturally
+        Vector3 targetVelocity = moveDir * moveSpeed;
+        // Keep the current Y velocity (which should be 0 anyway) just in case
+        targetVelocity.y = agentRigidbody.linearVelocity.y; 
+        agentRigidbody.linearVelocity = targetVelocity;
 
         // Rotation for aesthetics
         if (moveDir.sqrMagnitude > 0.001f) 
         {
-            // Calculate the target angle based purely on the input direction
             float targetAngle = Mathf.Atan2(moveX, moveZ) * Mathf.Rad2Deg + facingOffsetY;
             Quaternion targetRotation = Quaternion.Euler(0, targetAngle, 0);
 
-            // Smoothly interpolate towards the target rotation using turnSpeed
             agentRigidbody.MoveRotation(Quaternion.RotateTowards(
                 agentRigidbody.rotation,
                 targetRotation,
@@ -249,29 +229,15 @@ public class MLAgentScript : Agent
             heldProduct.transform.SetParent(boxHoldAnchor);
             heldProduct.transform.localPosition = Vector3.zero;
             heldProduct.transform.localRotation = Quaternion.identity;
-            heldProductColliders = heldProduct.GetComponentsInChildren<Collider>(true);
-            SetHeldProductCollidersEnabled(false);
-
             ProductIdentityEnums.Type boxType = heldProduct.GetComponent<ProductIdentity>().identity;
             AssignDropoff(boxType);
 
             ChangeState(State.CarryingBox);
+            cellManagerScript.BoxPickedUp();
         }
-    }
-
-    private void SetHeldProductCollidersEnabled(bool enabled)
-    {
-        if (heldProductColliders == null)
+        if(collidingGameObject.CompareTag("Bounds"))
         {
-            return;
-        }
-
-        for (int i = 0; i < heldProductColliders.Length; i++)
-        {
-            if (heldProductColliders[i] != null)
-            {
-                heldProductColliders[i].enabled = enabled;
-            }
+            cellManagerScript.BoundsHit();
         }
     }
 
@@ -282,12 +248,10 @@ public class MLAgentScript : Agent
         droppedProduct.transform.SetParent(newParent, false);
         droppedProduct.transform.localPosition = Vector3.zero;
         droppedProduct.transform.localRotation = Quaternion.identity;
-        SetHeldProductCollidersEnabled(true);
         central.UpdateProduct(droppedProduct);
 
         heldProduct = null;
-        heldProductColliders = null;
-        currentState = State.SearchingForBox;
+        ChangeState(State.SearchingForBox);
 
         return droppedProduct;
     }
@@ -296,17 +260,42 @@ public class MLAgentScript : Agent
     {
         if(boxType == ProductIdentityEnums.Type.Red)
         {
-            boxObject = new BoxObject(boxType) {dropOffTargetTransform = redTargetDropOffLocation};
+            boxObject = new BoxObject(boxType) {dropOffTargetVector3 = redTargetDropOffLocation};
         }
         else if(boxType == ProductIdentityEnums.Type.Blue)
         {
-            boxObject = new BoxObject(boxType) {dropOffTargetTransform = blueTargetDropOffLocation};
+            boxObject = new BoxObject(boxType) {dropOffTargetVector3 = blueTargetDropOffLocation};
         }
     }
 
-    // Update is called once per frame
     void Update()
     {
+        DrawLineToTarget();
+    }
+
+    private void SetupLineRenderer()
+    {
+        targetLine.positionCount = 2;
+        targetLine.startWidth = 0.05f;
+        targetLine.endWidth = 0.05f;
         
+        // Use a simple built-in unlit material so it doesn't look pink/missing
+        targetLine.material = new Material(Shader.Find("Sprites/Default")); 
+    }
+
+    private void DrawLineToTarget()
+    {
+        if (targetLine == null) return;
+
+        // Set the line colors based on what the agent is currently doing
+        Color currentColor = (currentState == State.CarryingBox) ? carryingColor : searchingColor;
+        targetLine.startColor = currentColor;
+        targetLine.endColor = currentColor;
+
+        // Origin point: The agent's current position
+        targetLine.SetPosition(0, transform.position);
+
+        // Destination point: The active target position based on state
+        targetLine.SetPosition(1, GetActiveTargetPosition());
     }
 }

@@ -163,9 +163,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 674fcaafa140417428bbe4513b029997, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CellManager
+  scoringParameters: {fileID: 11400000, guid: 9b7a6b3b676554647b1a1cb33db011a8, type: 2}
   redDropOffLocation: {fileID: 519345729}
   blueDropOffLocation: {fileID: 1002561218}
-  conveyorGameObject: {fileID: 713007275}
   MLAgentGameObject: {fileID: 159236203}
 --- !u!1 &8645121
 GameObject:
@@ -970,6 +970,116 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 407491288454180975, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
   m_PrefabInstance: {fileID: 7320088148593912184}
   m_PrefabAsset: {fileID: 0}
+--- !u!120 &159236227
+LineRenderer:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 159236203}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 0
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: ee5248ff55ece1b4faf7a8fd5fba64fa, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_Positions:
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 1}
+  m_Parameters:
+    serializedVersion: 3
+    widthMultiplier: 1
+    widthCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    colorGradient:
+      serializedVersion: 2
+      key0: {r: 1, g: 0, b: 0, a: 1}
+      key1: {r: 1, g: 1, b: 1, a: 1}
+      key2: {r: 0, g: 0, b: 0, a: 0}
+      key3: {r: 0, g: 0, b: 0, a: 0}
+      key4: {r: 0, g: 0, b: 0, a: 0}
+      key5: {r: 0, g: 0, b: 0, a: 0}
+      key6: {r: 0, g: 0, b: 0, a: 0}
+      key7: {r: 0, g: 0, b: 0, a: 0}
+      ctime0: 0
+      ctime1: 65535
+      ctime2: 0
+      ctime3: 0
+      ctime4: 0
+      ctime5: 0
+      ctime6: 0
+      ctime7: 0
+      atime0: 0
+      atime1: 65535
+      atime2: 0
+      atime3: 0
+      atime4: 0
+      atime5: 0
+      atime6: 0
+      atime7: 0
+      m_Mode: 0
+      m_ColorSpace: 0
+      m_NumColorKeys: 2
+      m_NumAlphaKeys: 2
+    numCornerVertices: 0
+    numCapVertices: 0
+    alignment: 0
+    textureMode: 0
+    textureScale: {x: 1, y: 1}
+    shadowBias: 0.5
+    generateLightingData: 0
+  m_UseWorldSpace: 1
+  m_Loop: 0
+  m_ApplyActiveColorSpace: 1
 --- !u!1 &418175069
 GameObject:
   m_ObjectHideFlags: 0
@@ -1416,6 +1526,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DropoffZoneScript
   identity: 0
   boxAnchor: {fileID: 1892266702}
+  CellManager: {fileID: 4230244}
 --- !u!135 &519345731
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -2171,6 +2282,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DropoffZoneScript
   identity: 1
   boxAnchor: {fileID: 1762435937}
+  CellManager: {fileID: 4230244}
 --- !u!135 &1002561220
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -4540,6 +4652,14 @@ PrefabInstance:
       propertyPath: dropOffLocations.Array.size
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1489438593604689106, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2407413400798909402, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
+      propertyPath: m_BehaviorType
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2407413400798909402, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
       propertyPath: m_BrainParameters.VectorObservationSize
       value: 15
@@ -4640,11 +4760,17 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: 4.56
       objectReference: {fileID: 0}
+    - target: {fileID: 8230047927911322230, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8764097000294667867, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
       propertyPath: m_LocalPosition.z
       value: 1.03
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 1489438593604689106, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
+    - {fileID: 8230047927911322230, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
     m_RemovedGameObjects:
     - {fileID: 6506881986904291110, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
     - {fileID: 897592808321407452, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
@@ -4668,6 +4794,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3763155766600569955, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 159236219}
+    - targetCorrespondingSourceObject: {fileID: 3763155766600569955, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 159236227}
     - targetCorrespondingSourceObject: {fileID: 2534184123980329502, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 713007277}

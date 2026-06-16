@@ -11,7 +11,7 @@ public class ScoringParameters : ScriptableObject
     [Tooltip("Reward for delivering box at correct location")]
     public float CorrectBoxDeliveryReward = 1f;
     [Tooltip("Reward for successfully picking up a box")]
-    public float PickupBoxReward = 0.1f;
+    public float PickupBoxReward = 1f;
     [Tooltip("Penalty for going out of bounds")]
     public float OutOfBoundsPenalty = -0.1f;
     [Tooltip("Penalty for staying out of bounds")]

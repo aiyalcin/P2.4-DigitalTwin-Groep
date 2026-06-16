@@ -15,5 +15,7 @@ MonoBehaviour:
   StepPenalty: -0.001
   WrongBoxDeliveryPenalty: -1
   CorrectBoxDeliveryReward: 1
-  PickupBoxReward: 0.1
+  PickupBoxReward: 1
+  OutOfBoundsPenalty: -0.1
+  OutOfBoundsStayPenalty: -0.01
   ProgressRewardScale: 0.1

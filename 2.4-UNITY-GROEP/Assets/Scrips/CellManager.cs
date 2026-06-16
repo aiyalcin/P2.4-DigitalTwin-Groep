@@ -21,7 +21,6 @@ public class CellManager : MonoBehaviour
     {
         
     }
-
     public void BoundsHit()
     {
         mLAgentScript.AddReward(scoringParameters.OutOfBoundsPenalty);
@@ -61,6 +60,7 @@ public class CellManager : MonoBehaviour
     public void BoxPickedUp()
     {
         mLAgentScript.AddReward(scoringParameters.PickupBoxReward);
+        Debug.Log($"Box picked up and reward applied: {scoringParameters.PickupBoxReward}");
         ResetDistanceTracking();
     }
 

@@ -2,58 +2,31 @@
     "SortingBehaviour": {
         "checkpoints": [
             {
-                "steps": 499964,
-                "file_path": "results\\SortingTraining_01\\SortingBehaviour\\SortingBehaviour-499964.onnx",
-                "reward": 3.6467112600803375,
-                "creation_time": 1781647746.6212444,
+                "steps": 499970,
+                "file_path": "results\\SortingTraining_01\\SortingBehaviour\\SortingBehaviour-499970.onnx",
+                "reward": 3.50850379892758,
+                "creation_time": 1781690577.0425165,
                 "auxillary_file_paths": [
-                    "results\\SortingTraining_01\\SortingBehaviour\\SortingBehaviour-499964.pt"
+                    "results\\SortingTraining_01\\SortingBehaviour\\SortingBehaviour-499970.pt"
                 ]
             },
             {
-                "steps": 869763,
-                "file_path": "results\\SortingTraining_01\\SortingBehaviour\\SortingBehaviour-869763.onnx",
-                "reward": 3.62981915473938,
-                "creation_time": 1781647896.0964084,
+                "steps": 529497,
+                "file_path": "results\\SortingTraining_01\\SortingBehaviour\\SortingBehaviour-529497.onnx",
+                "reward": 3.5200241442476767,
+                "creation_time": 1781690604.4387553,
                 "auxillary_file_paths": [
-                    "results\\SortingTraining_01\\SortingBehaviour\\SortingBehaviour-869763.pt"
-                ]
-            },
-            {
-                "steps": 879289,
-                "file_path": "results\\SortingTraining_01\\SortingBehaviour\\SortingBehaviour-879289.onnx",
-                "reward": 3.5964521254811967,
-                "creation_time": 1781648120.160558,
-                "auxillary_file_paths": [
-                    "results\\SortingTraining_01\\SortingBehaviour\\SortingBehaviour-879289.pt"
-                ]
-            },
-            {
-                "steps": 910521,
-                "file_path": "results\\SortingTraining_01\\SortingBehaviour\\SortingBehaviour-910521.onnx",
-                "reward": 3.4693923128975763,
-                "creation_time": 1781648384.6953478,
-                "auxillary_file_paths": [
-                    "results\\SortingTraining_01\\SortingBehaviour\\SortingBehaviour-910521.pt"
-                ]
-            },
-            {
-                "steps": 912024,
-                "file_path": "results\\SortingTraining_01\\SortingBehaviour\\SortingBehaviour-912024.onnx",
-                "reward": 3.6147614121437073,
-                "creation_time": 1781648503.4161038,
-                "auxillary_file_paths": [
-                    "results\\SortingTraining_01\\SortingBehaviour\\SortingBehaviour-912024.pt"
+                    "results\\SortingTraining_01\\SortingBehaviour\\SortingBehaviour-529497.pt"
                 ]
             }
         ],
         "final_checkpoint": {
-            "steps": 912024,
+            "steps": 529497,
             "file_path": "results\\SortingTraining_01\\SortingBehaviour.onnx",
-            "reward": 3.6147614121437073,
-            "creation_time": 1781648503.4161038,
+            "reward": 3.5200241442476767,
+            "creation_time": 1781690604.4387553,
             "auxillary_file_paths": [
-                "results\\SortingTraining_01\\SortingBehaviour\\SortingBehaviour-912024.pt"
+                "results\\SortingTraining_01\\SortingBehaviour\\SortingBehaviour-529497.pt"
             ]
         }
     },

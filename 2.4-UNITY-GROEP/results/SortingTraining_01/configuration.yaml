@@ -45,7 +45,7 @@ behaviors:
     self_play: null
     behavioral_cloning: null
 env_settings:
-  env_path: null
+  env_path: C:\Users\adami\Desktop\School\Technische Informatica\Jaar 2\Periode 4\P2.4-DigitalTwin-Groep\2.4-UNITY-GROEP\Builds\2.4-UNITY-GROEP.exe
   env_args: null
   base_port: 5005
   num_envs: 1
@@ -62,14 +62,14 @@ engine_settings:
   time_scale: 20
   target_frame_rate: -1
   capture_frame_rate: 60
-  no_graphics: false
+  no_graphics: true
   no_graphics_monitor: false
 environment_parameters: null
 checkpoint_settings:
   run_id: SortingTraining_01
   initialize_from: null
   load_model: false
-  resume: true
+  resume: false
   force: false
   train_model: false
   inference: false

@@ -31,6 +31,16 @@ public class DropoffZoneScript : MonoBehaviour
         return false;
     }
 
+    public void ClearBox()
+    {
+        if (isOccupied && heldBox != null)
+        {
+            Destroy(heldBox);
+            heldBox = null;
+            isOccupied = false;
+        }
+    }
+
     void OnTriggerEnter(Collider collider)
     {
         GameObject obj = collider.gameObject;
@@ -41,6 +51,8 @@ public class DropoffZoneScript : MonoBehaviour
         }
         if (obj.CompareTag("MLAgent") && obj.GetComponent<MLAgentScript>().currentState == MLAgentScript.State.CarryingBox)
         {
+            cellManagerScript.ClearOtherZones(this);
+    
             MLAgentScript agent = obj.GetComponent<MLAgentScript>();
             heldBox = agent.PassBox(boxAnchor);
             if (CheckDropoff(heldBox.GetComponent<ProductIdentity>().identity))

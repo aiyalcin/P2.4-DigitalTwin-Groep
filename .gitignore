@@ -26,6 +26,7 @@
 2.4-UNITY-GROEP/Logs
 2.4-UNITY-GROEP/Library
 2.4-UNITY-GROEP/obj
+2.4-UNITY-GROEP/results/*/run_logs
 
 
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be committed to version control.
@@ -113,3 +114,4 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 2.4-UNITY-GROEP/[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+*.log

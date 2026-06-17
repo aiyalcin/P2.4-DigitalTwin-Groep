@@ -19,5 +19,7 @@ public class ScoringParameters : ScriptableObject
     [Header("Target proximity scoring")]
     [Tooltip("Scale at which proximity to target gives points")]
     public float ProgressRewardScale = 0.1f;
-
+    [Header("ML Agent training parameters")]
+    [Tooltip("Episode length in scored boxes")]
+    public int BoxesPerEpisode = 10;
 }

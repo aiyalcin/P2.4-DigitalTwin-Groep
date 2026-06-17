@@ -54,6 +54,10 @@ public class MLAgentScript : Agent
         controls = new InputSystem_Actions();
         targetLine = GetComponent<LineRenderer>();
         SetupLineRenderer();
+        if (!Academy.Instance.IsCommunicatorOn) 
+        {
+            Time.timeScale = 5.0f; // Run the simulation 5x faster
+        }
     }
 
     public override void Initialize()

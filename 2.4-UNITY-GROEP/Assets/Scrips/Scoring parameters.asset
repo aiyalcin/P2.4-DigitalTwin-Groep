@@ -19,3 +19,4 @@ MonoBehaviour:
   OutOfBoundsPenalty: -0.1
   OutOfBoundsStayPenalty: -0.01
   ProgressRewardScale: 0.1
+  BoxesPerEpisode: 5

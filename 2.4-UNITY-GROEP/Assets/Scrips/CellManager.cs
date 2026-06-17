@@ -9,6 +9,13 @@ public class CellManager : MonoBehaviour
     [SerializeField] private GameObject MLAgentGameObject;
     private MLAgentScript mLAgentScript;
     private float previousDistanceToTarget = Mathf.Infinity;
+    private int boxesDelivered = 0;
+    private float totalStepPenalty = 0f;
+    private float totalDistanceReward = 0f;
+    private float totalBoxPickupReward = 0f;
+    private float totalDropoffReward = 0f;
+    private float totalOutOfBoundsPenalty = 0f;
+    private float TotalReward = 0f;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -24,7 +31,6 @@ public class CellManager : MonoBehaviour
     public void BoundsHit()
     {
         mLAgentScript.AddReward(scoringParameters.OutOfBoundsPenalty);
-        Debug.Log(scoringParameters.OutOfBoundsPenalty);
     }
 
     public void BoundsStay()
@@ -67,7 +73,12 @@ public class CellManager : MonoBehaviour
     public void DropoffHit(bool isCorrect)
     {
         mLAgentScript.AddReward(isCorrect ? scoringParameters.CorrectBoxDeliveryReward : scoringParameters.WrongBoxDeliveryPenalty);
-        mLAgentScript.EndEpisode();
+        boxesDelivered++;
+        if(boxesDelivered >= scoringParameters.BoxesPerEpisode)
+        {
+            mLAgentScript.EndEpisode();
+            boxesDelivered = 0;
+        }
     }
 
     public void ResetDistanceTracking()

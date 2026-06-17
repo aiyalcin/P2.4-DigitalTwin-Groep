@@ -33,7 +33,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.cloud.gltfast": {
-      "version": "file:/home/supag/Downloads/com.unity.cloud.gltfast-main/Packages/com.unity.cloud.gltfast",
+      "version": "file:/home/supag/Unity/Packages/com.unity.cloud.gltfast-main/Packages/com.unity.cloud.gltfast",
       "depth": 0,
       "source": "local",
       "dependencies": {

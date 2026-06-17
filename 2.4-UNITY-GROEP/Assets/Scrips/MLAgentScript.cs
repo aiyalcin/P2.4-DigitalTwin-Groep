@@ -14,11 +14,12 @@ public class MLAgentScript : Agent
     private CellManager cellManagerScript; // Reference to the CellManager script for accessing dropoff locations
     [SerializeField] private GameObject conveyorGameObject; // Reference to the ConveyorLogic script for conveyor operations
     private ConveyorLogic conveyorLogic; // Reference to the ConveyorLogic script for conveyor operations
+    [SerializeField] private Transform boxHoldAnchor; // Transform representing the position where the agent holds the box
+    [SerializeField] private DelegateStatus central;
+
     // ================================================================================================== \\
-    
-
-    [SerializeField] private GameObject debugSphere; // A sphere used for debugging purposes to visualize the target drop-off location
-
+    private Vector3 startingPosition;
+    private Quaternion startingRotation;
     private List<Vector3> dropOffLocations;
     private Vector3 blueTargetDropOffLocation; // Position of the blue box drop-off location
     private Vector3 redTargetDropOffLocation; // Position of the red box drop-off location
@@ -27,26 +28,38 @@ public class MLAgentScript : Agent
     [SerializeField] private float moveSpeed = 0.5f;
     [SerializeField] private float turnSpeed = 720f;
     [SerializeField] private float facingOffsetY = 90f;
-    [SerializeField] private Transform boxHoldAnchor; 
+    
 
     [Header("Input System Heuristic")]
     private InputSystem_Actions controls;
 
     [Header("Observations")]
     [SerializeField] private float maxDistance = 20f; // used to normalize distances
-    bool holdingBox = false; // Bool to track whether the agent is currently holding a box
+    [Header("Visualizations")]
+    private LineRenderer targetLine;
+    [SerializeField] private Color searchingColor = Color.yellow;
+    [SerializeField] private Color carryingColor = Color.green;
+    public enum State
+    {
+        SearchingForBox,
+        CarryingBox
+    }
+    public State currentState = State.SearchingForBox; // Track the current state of the agent
     private GameObject heldProduct;
     private BoxObject boxObject; // ScriptableObject containing box type and dropoff mapping
-    private bool isTesting = true;  // Flag to disable pre run checks
+    private bool isTesting = false;  // Flag to disable pre run checks
 
-    void Awake()
+    new void Awake()
     {
         controls = new InputSystem_Actions();
+        targetLine = GetComponent<LineRenderer>();
+        SetupLineRenderer();
     }
 
-    void Start()
+    public override void Initialize()
     {
         agentRigidbody = GetComponent<Rigidbody>();
+        agentRigidbody.sleepThreshold = 0;
         agentRigidbody.constraints |= RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         agentRigidbody.constraints |= RigidbodyConstraints.FreezePositionY;
         agentRigidbody.interpolation = RigidbodyInterpolation.Interpolate;
@@ -62,21 +75,44 @@ public class MLAgentScript : Agent
                 return;
             }
         }
-
-        conveyorLogic.ConveyorRound();
+        startingPosition = transform.localPosition; 
+        startingRotation = transform.localRotation;
+        conveyorLogic.ResetConveyor();
         dropOffLocations = cellManagerScript.GetDropOffLocations();
         redTargetDropOffLocation = dropOffLocations[0];
         blueTargetDropOffLocation = dropOffLocations[1];
+        
+        cellManagerScript.ResetDistanceTracking();
+    }
 
-        GameObject debugSphereInstanceR; // Instance of the debug sphere to visualize the target drop-off location
-        GameObject debugSphereInstanceB; // Instance of the debug sphere to visualize the target drop-off location
-        Debug.Log($"Red Drop-off Location: {redTargetDropOffLocation}, Blue Drop-off Location: {blueTargetDropOffLocation}");
-        debugSphereInstanceR = Instantiate(debugSphere, redTargetDropOffLocation, Quaternion.identity);
-        debugSphereInstanceB = Instantiate(debugSphere, blueTargetDropOffLocation, Quaternion.identity);
-        Debug.Log($"Debug sphere instantiated at: {redTargetDropOffLocation}");
-        Debug.Log($"Debug sphere instantiated at: {blueTargetDropOffLocation}");
-        Destroy(debugSphereInstanceR, 5f); // Destroy the debug sphere after 5 seconds to prevent clutter
-        Destroy(debugSphereInstanceB, 5f); // Destroy the debug sphere after 5 seconds to prevent clutter
+    public override void OnEpisodeBegin()
+    {
+        Debug.Log("Episode Began!");
+        ChangeState(State.SearchingForBox);
+
+        if (agentRigidbody != null)
+        {
+            agentRigidbody.linearVelocity = Vector3.zero;
+            agentRigidbody.angularVelocity = Vector3.zero;
+        }   
+
+        transform.localPosition = startingPosition;
+        transform.localRotation = startingRotation;
+
+        if (heldProduct != null)
+        {
+            Destroy(heldProduct);
+            heldProduct = null;
+        }
+        if (conveyorLogic != null)
+        {
+            conveyorLogic.ResetConveyor(); 
+        }
+
+        if (cellManagerScript != null)
+        {
+            cellManagerScript.ResetDistanceTracking();
+        }
     }
 
     protected override void OnEnable()
@@ -113,22 +149,24 @@ public class MLAgentScript : Agent
             Debug.LogError("MLAgentScript requires a box pickup location object.");
             return false;
         }
+        if (boxHoldAnchor == null)
+        {
+            Debug.LogError("MLAgentScript requires a box hold anchor transform.");
+            return false;
+        }
         if (GetComponent<Rigidbody>() == null)
         {
             Debug.LogError("MLAgentScript requires a Rigidbody component.");
             return false;
         }
-        else
-        {
-            return true;
-        }
+        return true;
     }
 
 
     public override void CollectObservations(VectorSensor sensor)
     {
         // Global observations.
-        sensor.AddObservation(holdingBox ? 1f : 0f); // Whether the agent is holding a box.
+        sensor.AddObservation(currentState == State.CarryingBox ? 1f : 0f); // Whether the agent is holding a box.
 
         // Relative pickup observation is always present so the vector size stays fixed.
         sensor.AddObservation((boxPickupLocation.transform.position - transform.position) / maxDistance);
@@ -139,10 +177,10 @@ public class MLAgentScript : Agent
         sensor.AddObservation((blueTargetDropOffLocation - transform.position) / maxDistance);
 
         // When a box is held, also expose the correct target drop-off.
-        if (holdingBox)
+        if (currentState == State.CarryingBox)
         {
-            sensor.AddObservation((boxObject.dropOffTargetTransform - transform.position) / maxDistance);
-            sensor.AddObservation(Vector3.Distance(transform.position, boxObject.dropOffTargetTransform) / maxDistance);
+            sensor.AddObservation((boxObject.dropOffTargetVector3 - transform.position) / maxDistance);
+            sensor.AddObservation(Vector3.Distance(transform.position, boxObject.dropOffTargetVector3) / maxDistance);
         }
         else
         {
@@ -159,6 +197,21 @@ public class MLAgentScript : Agent
         {
             MoveAgent(moveX, moveZ);
         }
+
+        cellManagerScript.ActionRecievedCall();
+    }
+
+    private void ChangeState(State newState) // Helper function to change the agent's state and reset relevant tracking variables for reward shaping
+    {
+        currentState = newState;
+        cellManagerScript.ResetDistanceTracking();
+    }
+
+    public Vector3 GetActiveTargetPosition()
+    {
+        return currentState == State.CarryingBox
+            ? boxObject.dropOffTargetVector3
+            : boxPickupLocation.transform.position;
     }
 
     public override void Heuristic(in ActionBuffers actionsOut) // Used for manual control of the agent during testing or debugging
@@ -167,29 +220,31 @@ public class MLAgentScript : Agent
         
         // Read the 2D input vector (WASD) from the New Input System
         Vector2 inputVector = controls.Player.Move.ReadValue<Vector2>();
-        continuousActionsOut[0] = -inputVector.y; // mapped to moveX
-        continuousActionsOut[1] = inputVector.x; // mapped to moveZ
+        continuousActionsOut[0] = -inputVector.y;
+        continuousActionsOut[1] = inputVector.x;
     }
 
     void MoveAgent(float moveX, float moveZ) 
     {
         Vector3 moveDir = new Vector3(moveX, 0, moveZ);
-    
+
         if (moveDir.magnitude > 1f)
         {
             moveDir.Normalize();
         }
 
-        agentRigidbody.MovePosition(agentRigidbody.position + moveDir * moveSpeed * Time.fixedDeltaTime);
+        // Set velocity directly instead of MovePosition to let physics handle wall collisions naturally
+        Vector3 targetVelocity = moveDir * moveSpeed;
+        // Keep the current Y velocity (which should be 0 anyway) just in case
+        targetVelocity.y = agentRigidbody.linearVelocity.y; 
+        agentRigidbody.linearVelocity = targetVelocity;
 
         // Rotation for aesthetics
         if (moveDir.sqrMagnitude > 0.001f) 
         {
-            // Calculate the target angle based purely on the input direction
             float targetAngle = Mathf.Atan2(moveX, moveZ) * Mathf.Rad2Deg + facingOffsetY;
             Quaternion targetRotation = Quaternion.Euler(0, targetAngle, 0);
 
-            // Smoothly interpolate towards the target rotation using turnSpeed
             agentRigidbody.MoveRotation(Quaternion.RotateTowards(
                 agentRigidbody.rotation,
                 targetRotation,
@@ -200,55 +255,101 @@ public class MLAgentScript : Agent
 
     void OnTriggerEnter(Collider collider)
     {
-        // 1. Universal log to see if ANY trigger contact is happening
-        Debug.Log($"Trigger entered with object named: {collider.gameObject.name} | Tag: {collider.gameObject.tag}");
         GameObject collidingGameObject = collider.gameObject;
-        if(collidingGameObject.CompareTag("PickupZoneTrigger") && !holdingBox) // Pickup box logic
+        if(collidingGameObject.CompareTag("PickupZoneTrigger") && currentState == State.SearchingForBox) // Pickup box logic
         {
-            Debug.Log("Pickup zone tag matched! Attempting to grab box...");
-            heldProduct = conveyorLogic.RemoveFromConveyor(agentRigidbody.transform);
-            heldProduct.transform.SetParent(boxHoldAnchor);
-            heldProduct.transform.localPosition = Vector3.zero;
-            heldProduct.transform.localRotation = Quaternion.identity;
-            AssignDropoff(heldProduct.GetComponent<ProductIdentity>().identity);
-            holdingBox = true;
+            heldProduct = conveyorLogic.RemoveFromConveyor(boxHoldAnchor);
+            Rigidbody boxRb = heldProduct.GetComponent<Rigidbody>();
+            if (boxRb != null) {
+                boxRb.isKinematic = true; // Stops the engine from calculating physics for the box
+            }
+
+            Collider boxCollider = heldProduct.GetComponent<Collider>();
+            if (boxCollider != null) {
+                boxCollider.enabled = false; // Prevents overlapping with the Agent
+            }
+            ProductIdentityEnums.Type boxType = heldProduct.GetComponent<ProductIdentity>().identity;
+            AssignDropoff(boxType);
+
+            ChangeState(State.CarryingBox);
+            cellManagerScript.BoxPickedUp();
         }
-        if(collidingGameObject.CompareTag("DropoffZoneTrigger") && holdingBox) // Dropoff box logic
+        
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if(collision.gameObject.CompareTag("Bounds"))
         {
-            Debug.Log("Dropoff zone tag matched! Attempting to drop box...");
-            Debug.Log("Agent is close enough to the drop-off location. Dropping box...");
-            if(collidingGameObject.GetComponent<DropoffZoneScript>().CheckDropoff(heldProduct.GetComponent<ProductIdentity>().identity))
-            {
-                AddReward(1.0f);
-                Debug.Log("Correct box dropped! Reward given.");
-            }
-            else
-            {
-                Debug.Log("Incorrect box dropped! Penalty applied.");
-                AddReward(-1.0f);
-            }
-            Destroy(heldProduct);
-            heldProduct = null;
-            holdingBox = false;
-            Debug.Log("Box dropping done!");
+            Debug.Log("Bounds HIT");
+            cellManagerScript.BoundsHit();
         }
+    }
+
+    void OnCollisionStay(Collision collision)
+    {
+        if(collision.gameObject.CompareTag("Bounds"))
+        {
+            Debug.Log("Bounds STAY");
+            cellManagerScript.BoundsStay();
+        }
+    }
+
+    public GameObject PassBox(Transform newParent)
+    {
+        GameObject droppedProduct = heldProduct;
+
+        droppedProduct.transform.SetParent(newParent, false);
+        droppedProduct.transform.localPosition = Vector3.zero;
+        droppedProduct.transform.localRotation = Quaternion.identity;
+        central.UpdateProduct(droppedProduct);
+
+        heldProduct = null;
+        ChangeState(State.SearchingForBox);
+
+        return droppedProduct;
     }
 
     void AssignDropoff(ProductIdentityEnums.Type boxType)
     {
         if(boxType == ProductIdentityEnums.Type.Red)
         {
-            boxObject = new BoxObject(boxType) {dropOffTargetTransform = redTargetDropOffLocation};
+            boxObject = new BoxObject(boxType) {dropOffTargetVector3 = redTargetDropOffLocation};
         }
         else if(boxType == ProductIdentityEnums.Type.Blue)
         {
-            boxObject = new BoxObject(boxType) {dropOffTargetTransform = blueTargetDropOffLocation};
+            boxObject = new BoxObject(boxType) {dropOffTargetVector3 = blueTargetDropOffLocation};
         }
     }
 
-    // Update is called once per frame
     void Update()
     {
+        DrawLineToTarget();
+    }
+
+    private void SetupLineRenderer()
+    {
+        targetLine.positionCount = 2;
+        targetLine.startWidth = 0.05f;
+        targetLine.endWidth = 0.05f;
         
+        // Use a simple built-in unlit material so it doesn't look pink/missing
+        targetLine.material = new Material(Shader.Find("Sprites/Default")); 
+    }
+
+    private void DrawLineToTarget()
+    {
+        if (targetLine == null) return;
+
+        // Set the line colors based on what the agent is currently doing
+        Color currentColor = (currentState == State.CarryingBox) ? carryingColor : searchingColor;
+        targetLine.startColor = currentColor;
+        targetLine.endColor = currentColor;
+
+        // Origin point: The agent's current position
+        targetLine.SetPosition(0, transform.position);
+
+        // Destination point: The active target position based on state
+        targetLine.SetPosition(1, GetActiveTargetPosition());
     }
 }

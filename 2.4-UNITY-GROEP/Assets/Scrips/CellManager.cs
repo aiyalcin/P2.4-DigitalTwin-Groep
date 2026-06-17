@@ -4,8 +4,10 @@ using System.Collections.Generic;
 public class CellManager : MonoBehaviour
 {
     [SerializeField] private ScoringParameters scoringParameters;
-    [SerializeField] private Transform redDropOffLocation;
-    [SerializeField] private Transform blueDropOffLocation;
+    [SerializeField] private GameObject redDropOffLocation;
+    [SerializeField] private GameObject blueDropOffLocation;
+    private DropoffZoneScript redDropoffZoneScript;
+    private DropoffZoneScript blueDropoffZoneScript;
     [SerializeField] private GameObject MLAgentGameObject;
     private MLAgentScript mLAgentScript;
     private float previousDistanceToTarget = Mathf.Infinity;
@@ -21,6 +23,8 @@ public class CellManager : MonoBehaviour
     void Start()
     {
         mLAgentScript = MLAgentGameObject.GetComponent<MLAgentScript>();
+        redDropoffZoneScript = redDropOffLocation.GetComponent<DropoffZoneScript>();
+        blueDropoffZoneScript = blueDropOffLocation.GetComponent<DropoffZoneScript>();
     }
 
     // Update is called once per frame
@@ -42,10 +46,16 @@ public class CellManager : MonoBehaviour
     {
         List<Vector3> dropOffLocations = new List<Vector3>
         {
-            redDropOffLocation.position,
-            blueDropOffLocation.position
+            redDropOffLocation.transform.position,
+            blueDropOffLocation.transform.position
         };
         return dropOffLocations;
+    }
+
+    public void ClearOtherZones(DropoffZoneScript callingZone)
+    {
+        if (redDropoffZoneScript != callingZone) {redDropoffZoneScript.ClearBox();}
+        if (blueDropoffZoneScript != callingZone) {blueDropoffZoneScript.ClearBox();}
     }
 
     public void ActionRecievedCall()

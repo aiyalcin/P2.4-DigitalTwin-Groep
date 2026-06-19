@@ -44,6 +44,7 @@ public class MLAgentScript : Agent
         SearchingForBox,
         CarryingBox
     }
+
     public State currentState = State.SearchingForBox; // Track the current state of the agent
     private GameObject heldProduct;
     private BoxObject boxObject; // ScriptableObject containing box type and dropoff mapping
@@ -356,4 +357,4 @@ public class MLAgentScript : Agent
         // Destination point: The active target position based on state
         targetLine.SetPosition(1, GetActiveTargetPosition());
     }
-}
+} 

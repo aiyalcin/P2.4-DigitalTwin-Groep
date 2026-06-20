@@ -27,6 +27,8 @@
 2.4-UNITY-GROEP/Library
 2.4-UNITY-GROEP/obj
 
+ml-env
+
 
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be committed to version control.
 *.blend1

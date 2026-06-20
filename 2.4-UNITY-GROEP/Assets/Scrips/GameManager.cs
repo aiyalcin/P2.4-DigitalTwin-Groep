@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+using Unity.MLAgents.Sensors;
 using UnityEngine;
 public class GameManager : MonoBehaviour
 {
@@ -12,21 +15,33 @@ public class GameManager : MonoBehaviour
     public int cols = 4;
 
     [Tooltip("Spacing between area centers")]
-    public float spacing = 20f;
+    public float spacing = 25f;
+
+    private List<GameObject> robots = new List<GameObject>();
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        Debug.Log("GameManager Start");
+
         if (areaPrefab == null)
         {
             Debug.LogError("TrainingAreaSpawner: areaPrefab is not assigned.");
             return;
         }
+
+        SpawnCells();
     }
 
     // Update is called once per frame
     void Update()
     {
         
+    }
+
+    void scanRobots()
+    {
+        robots = GameObject.FindGameObjectsWithTag("Robot").ToList();
     }
 
     void SpawnCells()
@@ -42,6 +57,21 @@ public class GameManager : MonoBehaviour
                 // Give each instance a unique name for easier debugging
                 instance.name = $"{areaPrefab.name}_r{r}_c{c}";
             }
+        }
+    }
+
+    private class RobotData
+    {
+        // Store wanted data
+        public float CorrectPercentage { get; set; }
+        public float TimePerRound { get; set; }
+
+        public RobotData ExtractRobotData(GameObject obj)
+        {
+            return new RobotData
+            {
+               
+            };
         }
     }
 }

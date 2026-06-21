@@ -72,7 +72,7 @@ public class CameraManager : MonoBehaviour
             detailsPanel.SetActive(false);
             delegateInformation.text = "General Overview";
 
-            cam.Lens.FieldOfView = 60f;
+            cam.Lens.FieldOfView = 90f;
 
         }
         else
@@ -85,6 +85,11 @@ public class CameraManager : MonoBehaviour
 
             delegateUI.UpdateCurrentDelegate(target.parent.gameObject);
         }
+    }
+
+    public void TogglePanel()
+    {
+        detailsPanel.SetActive(!detailsPanel.activeSelf);
     }
 
     public void NextIndex()

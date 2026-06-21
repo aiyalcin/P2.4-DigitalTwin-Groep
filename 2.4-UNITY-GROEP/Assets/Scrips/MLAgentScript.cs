@@ -5,6 +5,7 @@ using Unity.MLAgents.Sensors;
 using Unity.MLAgents.Actuators;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using System;
 public class MLAgentScript : Agent
 {
     // --------------------- THESE GAME OBJECT MUST BE CHECKED IN THE TEST FUNCTION --------------------- \\
@@ -48,6 +49,9 @@ public class MLAgentScript : Agent
     private GameObject heldProduct;
     private BoxObject boxObject; // ScriptableObject containing box type and dropoff mapping
     private bool isTesting = false;  // Flag to disable pre run checks
+
+    public static event Action onEpisodeBegan;
+    public static event Action onBoxPassed;
 
     new void Awake()
     {
@@ -93,6 +97,7 @@ public class MLAgentScript : Agent
     {
         Debug.Log("Episode Began!");
         ChangeState(State.SearchingForBox);
+        onEpisodeBegan?.Invoke();
 
         if (agentRigidbody != null)
         {
@@ -301,6 +306,8 @@ public class MLAgentScript : Agent
 
     public GameObject PassBox(Transform newParent)
     {
+        onBoxPassed?.Invoke();
+
         GameObject droppedProduct = heldProduct;
 
         droppedProduct.transform.SetParent(newParent, false);

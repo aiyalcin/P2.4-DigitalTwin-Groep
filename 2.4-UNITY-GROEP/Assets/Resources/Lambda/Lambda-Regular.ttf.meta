@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 37634d627aebd6141afe755e6128808e
+guid: fefa6b5dafa69a345a54ace7111d8c58
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - monogram
+  - Lambda
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0

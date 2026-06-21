@@ -16,6 +16,8 @@ public class CameraManager : MonoBehaviour
     public GameObject detailsPanel;
     public TextMeshProUGUI delegateInformation;
 
+    public DelegateUI delegateUI;
+
     private int currentIndex = 0;
 
     private void Start()
@@ -66,17 +68,22 @@ public class CameraManager : MonoBehaviour
 
         if (currentIndex == 0)
         {
+            detailsButton.SetActive(false);
             detailsPanel.SetActive(false);
             delegateInformation.text = "General Overview";
 
             cam.Lens.FieldOfView = 60f;
+
         }
         else
         {
+            detailsButton.SetActive(true);
             detailsPanel.SetActive(true);
             delegateInformation.text = "Delegate: " + currentIndex.ToString();
 
             cam.Lens.FieldOfView = 35f;
+
+            delegateUI.UpdateCurrentDelegate(target.parent.gameObject);
         }
     }
 

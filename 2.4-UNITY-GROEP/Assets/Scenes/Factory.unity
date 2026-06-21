@@ -5506,6 +5506,67 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3922330040410419903, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
   m_PrefabInstance: {fileID: 7320088148593912184}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1322586281
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1322586284}
+  - component: {fileID: 1322586283}
+  - component: {fileID: 1322586282}
+  m_Layer: 0
+  m_Name: UIManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1322586282
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1322586281}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f8d706114a9273439034585925091f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EpisodeUi
+  episodeCountText: {fileID: 339735838}
+  scoringParameters: {fileID: 11400000, guid: 9b7a6b3b676554647b1a1cb33db011a8, type: 2}
+  episodeProgressionScroll: {fileID: 1338752523}
+--- !u!114 &1322586283
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1322586281}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00127d8b4cf4978479e1abc68f2e3c53, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TimeUI
+  time: {fileID: 1866170486}
+--- !u!4 &1322586284
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1322586281}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 28.44818, y: 0, z: 32.37999}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1338752521
 GameObject:
   m_ObjectHideFlags: 0
@@ -8360,8 +8421,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 45
-  m_fontSizeBase: 45
+  m_fontSize: 41
+  m_fontSizeBase: 41
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -9649,7 +9710,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1991399633
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9666,6 +9727,8 @@ MonoBehaviour:
   rows: 4
   cols: 4
   spacing: 20
+  spawnHiearchy: {fileID: 1921206461}
+  ogPrefab: {fileID: 58006288}
 --- !u!4 &1991399634
 Transform:
   m_ObjectHideFlags: 0
@@ -10425,3 +10488,4 @@ SceneRoots:
   - {fileID: 1170921717}
   - {fileID: 1561295854}
   - {fileID: 1991399634}
+  - {fileID: 1322586284}

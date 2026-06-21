@@ -6,52 +6,60 @@ using UnityEngine.UI;
 public class EpisodeUi : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI episodeCountText;
-    private int episodeCount;
+    private float episodeCount = 0;
 
     [SerializeField] private ScoringParameters scoringParameters;
     [SerializeField] private Scrollbar episodeProgressionScroll;
-    private int score;
+    private int score = 0;
+
+    private void Start()
+    {
+        ShowEpisodeProgression();
+        ShowEpisode();
+    }
 
     private void OnEnable()
     {
-        MLAgentScript.onEpisodeBegan += MLAgentScript_onEpisodeBegan;
         MLAgentScript.onBoxPassed += MLAgentScript_onBoxPassed;
     }
 
     private void OnDisable()
     {
-        MLAgentScript.onEpisodeBegan -= MLAgentScript_onEpisodeBegan;
         MLAgentScript.onBoxPassed -= MLAgentScript_onBoxPassed;
-    }
-
-    private void MLAgentScript_onEpisodeBegan()
-    {
-        episodeCount++;
-        episodeCountText.text = "Episode " + episodeCount.ToString();
-
-        score = 0;
-        ShowScore();
     }
 
     private void MLAgentScript_onBoxPassed()
     {
         score++;
 
-        ShowScore();
+        if (CalculateEpisodeProgression() >= 1f)
+        {
+            episodeCount++;
+            ShowEpisode();
+            score = 0;
+            CalculateEpisodeProgression();
+        }
+
+        ShowEpisodeProgression();
     }
 
-    private void ShowScore()
+    private void ShowEpisode()
     {
-        episodeProgressionScroll.size = CalculateScore();
+        episodeCountText.text = "Episode " + episodeCount;
     }
 
-    private float CalculateScore()
+    private void ShowEpisodeProgression()
     {
-        if (scoringParameters == null || scoringParameters.BoxesPerEpisode == 0)
+        episodeProgressionScroll.size = CalculateEpisodeProgression();
+    }
+
+    private float CalculateEpisodeProgression()
+    {
+        if (scoringParameters == null || scoringParameters.BoxesPerEpisode == 0 || GameManager.totalDelagets == 0)
         {
             return 0f;
         }
 
-        return (float)score / scoringParameters.BoxesPerEpisode;
+        return (float)score / (scoringParameters.BoxesPerEpisode * GameManager.totalDelagets);
     }
 }

@@ -50,7 +50,6 @@ public class MLAgentScript : Agent
     private BoxObject boxObject; // ScriptableObject containing box type and dropoff mapping
     private bool isTesting = false;  // Flag to disable pre run checks
 
-    public static event Action onEpisodeBegan;
     public static event Action onBoxPassed;
 
     new void Awake()
@@ -97,7 +96,6 @@ public class MLAgentScript : Agent
     {
         Debug.Log("Episode Began!");
         ChangeState(State.SearchingForBox);
-        onEpisodeBegan?.Invoke();
 
         if (agentRigidbody != null)
         {

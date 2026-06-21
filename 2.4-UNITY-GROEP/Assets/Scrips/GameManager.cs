@@ -13,14 +13,28 @@ public class GameManager : MonoBehaviour
 
     [Tooltip("Spacing between area centers")]
     public float spacing = 20f;
+
+    [Tooltip("Where in te hiearchy it exists")]
+    public Transform spawnHiearchy;
+
+    [Tooltip("The delegate that serves as an example that needs to be hidden at the start")]
+    public GameObject ogPrefab;
+
+    public static int totalDelagets = 0;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    void Awake()
     {
         if (areaPrefab == null)
         {
             Debug.LogError("TrainingAreaSpawner: areaPrefab is not assigned.");
             return;
         }
+
+        SpawnCells();
+        DisableOriginal();
+
+        totalDelagets = rows * cols;
     }
 
     // Update is called once per frame
@@ -37,11 +51,18 @@ public class GameManager : MonoBehaviour
             {
                 Vector3 pos = new Vector3(r * spacing, 0f, c * spacing);
                 Quaternion rot = Quaternion.identity;
-                GameObject instance = Instantiate(areaPrefab, pos, rot, transform);
 
-                // Give each instance a unique name for easier debugging
+                Transform parent = spawnHiearchy != null ? spawnHiearchy : transform;
+
+                GameObject instance = Instantiate(areaPrefab, pos, rot, parent);
+
                 instance.name = $"{areaPrefab.name}_r{r}_c{c}";
             }
         }
+    }
+
+    void DisableOriginal()
+    {
+        ogPrefab.SetActive(false);
     }
 }

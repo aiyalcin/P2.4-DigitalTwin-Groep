@@ -13,12 +13,6 @@ public class CellManager : MonoBehaviour
     private MLAgentScript mLAgentScript;
     private float previousDistanceToTarget = Mathf.Infinity;
     private int boxesDelivered = 0;
-    private float totalStepPenalty = 0f;
-    private float totalDistanceReward = 0f;
-    private float totalBoxPickupReward = 0f;
-    private float totalDropoffReward = 0f;
-    private float totalOutOfBoundsPenalty = 0f;
-    private float TotalReward = 0f;
     private int correctDeliveries;
     private int wrongDeliveries;
 

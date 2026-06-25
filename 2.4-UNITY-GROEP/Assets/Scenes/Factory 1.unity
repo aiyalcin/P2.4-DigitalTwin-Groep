@@ -12425,10 +12425,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   areaPrefab: {fileID: 58006288}
-  rows: 12
-  cols: 5
+  rows: 1
+  cols: 1
   spacing: 25
-  spawnHiearchy: {fileID: 1921206461}
+  spawnHierarchy: {fileID: 0}
   ogPrefab: {fileID: 58006288}
 --- !u!4 &1991399634
 Transform:
@@ -23325,7 +23325,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 34276827013443506, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5
+      value: -8.24
       objectReference: {fileID: 0}
     - target: {fileID: 34276827013443506, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
       propertyPath: m_LocalPosition.y
@@ -23333,7 +23333,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 34276827013443506, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2
+      value: 3.79
       objectReference: {fileID: 0}
     - target: {fileID: 407491288454180975, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
       propertyPath: m_LocalPosition.x
@@ -23405,7 +23405,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2852644296294096945, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2
+      value: -1.2399998
       objectReference: {fileID: 0}
     - target: {fileID: 2852644296294096945, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
       propertyPath: m_LocalPosition.y
@@ -23413,7 +23413,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2852644296294096945, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2
+      value: 3.79
       objectReference: {fileID: 0}
     - target: {fileID: 3360269049537074735, guid: b5a54bbf314627dc191cf98ffd49578c, type: 3}
       propertyPath: m_LocalPosition.x

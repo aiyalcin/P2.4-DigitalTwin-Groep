@@ -17,7 +17,7 @@ public class GameManager : MonoBehaviour
     public float spacing = 20f;
 
     [Tooltip("Where in the hierarchy it exists")]
-    public Transform spawnHiearchy;
+    public Transform spawnHierarchy;
 
     [Tooltip("The delegate that serves as an example that needs to be hidden at the start")]
     public GameObject ogPrefab;
@@ -44,7 +44,7 @@ public class GameManager : MonoBehaviour
 
     private void SpawnCells()
     {
-        Transform parent = spawnHiearchy != null ? spawnHiearchy : transform;
+        Transform parent = spawnHierarchy != null ? spawnHierarchy : transform;
 
         for (int r = 0; r < rows; r++)
         {

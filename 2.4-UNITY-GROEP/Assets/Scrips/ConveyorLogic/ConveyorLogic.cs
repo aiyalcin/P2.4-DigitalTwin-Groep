@@ -5,9 +5,6 @@ using UnityEngine.UIElements;
 
 public class ConveyorLogic : MonoBehaviour
 {
-    [Tooltip("Reference to the central status tracker for the ML.")]
-    [SerializeField] private DelegateStatus central;
-
     [Tooltip("Configuration for conveyor behaviour.")]
     [SerializeField] private ProductionInformation settings;
 
@@ -16,6 +13,8 @@ public class ConveyorLogic : MonoBehaviour
 
     [Tooltip("List of products currently active on the conveyor.")]
     public List<GameObject> c_Products = new List<GameObject>();
+
+    [SerializeField] private DelegateData delegateData;
 
     void Update()
     {
@@ -37,11 +36,20 @@ public class ConveyorLogic : MonoBehaviour
 
         product.transform.localRotation = Quaternion.identity;
 
-        c_Products.RemoveAt(0);
+        GetCurrentProduct();
 
-        central.UpdateProduct(product);
+        c_Products.RemoveAt(0);
         
         return product;
+    }
+
+    public void GetCurrentProduct()
+    {
+        GameObject product = c_Products[0];
+
+        ProductIdentity productI = product.GetComponent<ProductIdentity>();
+
+        delegateData.SetCurrentProduct(productI.identity.ToString());
     }
 
     /// <summary>

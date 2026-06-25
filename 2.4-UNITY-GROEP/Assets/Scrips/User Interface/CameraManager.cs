@@ -83,7 +83,7 @@ public class CameraManager : MonoBehaviour
 
             cam.Lens.FieldOfView = 35f;
 
-            delegateUI.UpdateCurrentDelegate(target.parent.gameObject);
+            delegateUI.UpdateCurrentDelegate(target.parent.parent.gameObject);
         }
     }
 

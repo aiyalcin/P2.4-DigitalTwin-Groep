@@ -56,7 +56,9 @@ public class GameManager : MonoBehaviour
 
                 instance.name = $"{areaPrefab.name}_r{r}_c{c}";
 
-                Transform focus = instance.transform.Find("CameraFocus");
+                Transform focusParent = instance.transform.Find("SYSTEMS");
+
+                Transform focus = focusParent.transform.Find("CameraFocus");
 
                 if (focus != null)
                 {

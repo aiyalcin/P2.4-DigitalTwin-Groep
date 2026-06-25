@@ -6,6 +6,7 @@ public class CellManager : MonoBehaviour
     [SerializeField] private ScoringParameters scoringParameters;
     [SerializeField] private GameObject redDropOffLocation;
     [SerializeField] private GameObject blueDropOffLocation;
+    [SerializeField] private DelegateData delegateData;
     private DropoffZoneScript redDropoffZoneScript;
     private DropoffZoneScript blueDropoffZoneScript;
     [SerializeField] private GameObject MLAgentGameObject;
@@ -18,7 +19,9 @@ public class CellManager : MonoBehaviour
     private float totalDropoffReward = 0f;
     private float totalOutOfBoundsPenalty = 0f;
     private float TotalReward = 0f;
-    
+    private int correctDeliveries;
+    private int wrongDeliveries;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -82,8 +85,26 @@ public class CellManager : MonoBehaviour
 
     public void DropoffHit(bool isCorrect)
     {
+        if (isCorrect)
+        {
+            correctDeliveries++;
+            delegateData.RegisterSuccess();
+        }
+        else
+        {
+            wrongDeliveries++;
+            delegateData.RegisterFailure();
+        }
+
+        int total = correctDeliveries + wrongDeliveries;
+
+        float successRate = total > 0  ? ((float)correctDeliveries / total) * 100f : 0f;
+
+        delegateData.UpdateSuccessRate(successRate);
+
         mLAgentScript.AddReward(isCorrect ? scoringParameters.CorrectBoxDeliveryReward : scoringParameters.WrongBoxDeliveryPenalty);
         boxesDelivered++;
+
         if(boxesDelivered >= scoringParameters.BoxesPerEpisode)
         {
             mLAgentScript.EndEpisode();

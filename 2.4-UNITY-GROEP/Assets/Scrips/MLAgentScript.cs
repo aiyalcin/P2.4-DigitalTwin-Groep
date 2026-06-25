@@ -5,17 +5,18 @@ using Unity.MLAgents.Sensors;
 using Unity.MLAgents.Actuators;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using System;
 public class MLAgentScript : Agent
 {
     // --------------------- THESE GAME OBJECT MUST BE CHECKED IN THE TEST FUNCTION --------------------- \\
     Rigidbody agentRigidbody; // Rigidbody component of the MLAgent
     [SerializeField] private GameObject boxPickupLocation; // Game object representing the box to be sorted
+    [SerializeField] private DelegateData delegateData;
     [SerializeField] private GameObject cellManager; // Reference to the CellManager script for accessing dropoff locations
     private CellManager cellManagerScript; // Reference to the CellManager script for accessing dropoff locations
     [SerializeField] private GameObject conveyorGameObject; // Reference to the ConveyorLogic script for conveyor operations
     private ConveyorLogic conveyorLogic; // Reference to the ConveyorLogic script for conveyor operations
     [SerializeField] private Transform boxHoldAnchor; // Transform representing the position where the agent holds the box
-    [SerializeField] private DelegateStatus central;
 
     // ================================================================================================== \\
     private Vector3 startingPosition;
@@ -48,6 +49,8 @@ public class MLAgentScript : Agent
     private GameObject heldProduct;
     private BoxObject boxObject; // ScriptableObject containing box type and dropoff mapping
     private bool isTesting = false;  // Flag to disable pre run checks
+
+    public static event Action onBoxPassed;
 
     new void Awake()
     {
@@ -208,6 +211,7 @@ public class MLAgentScript : Agent
     private void ChangeState(State newState) // Helper function to change the agent's state and reset relevant tracking variables for reward shaping
     {
         currentState = newState;
+        delegateData.SetCurrentAction(newState.ToString());
         cellManagerScript.ResetDistanceTracking();
     }
 
@@ -301,12 +305,13 @@ public class MLAgentScript : Agent
 
     public GameObject PassBox(Transform newParent)
     {
+        onBoxPassed?.Invoke();
+
         GameObject droppedProduct = heldProduct;
 
         droppedProduct.transform.SetParent(newParent, false);
         droppedProduct.transform.localPosition = Vector3.zero;
         droppedProduct.transform.localRotation = Quaternion.identity;
-        central.UpdateProduct(droppedProduct);
 
         heldProduct = null;
         ChangeState(State.SearchingForBox);

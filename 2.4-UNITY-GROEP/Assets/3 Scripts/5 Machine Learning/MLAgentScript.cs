@@ -9,47 +9,77 @@ using System;
 public class MLAgentScript : Agent
 {
     // --------------------- THESE GAME OBJECT MUST BE CHECKED IN THE TEST FUNCTION --------------------- \\
-    Rigidbody agentRigidbody; // Rigidbody component of the MLAgent
-    [SerializeField] private GameObject boxPickupLocation; // Game object representing the box to be sorted
-    [SerializeField] private DelegateData delegateData;
-    [SerializeField] private GameObject cellManager; // Reference to the CellManager script for accessing dropoff locations
+    private Rigidbody agentRigidbody; // Rigidbody component of the MLAgent
     private CellManager cellManagerScript; // Reference to the CellManager script for accessing dropoff locations
-    [SerializeField] private GameObject conveyorGameObject; // Reference to the ConveyorLogic script for conveyor operations
     private ConveyorLogic conveyorLogic; // Reference to the ConveyorLogic script for conveyor operations
-    [SerializeField] private Transform boxHoldAnchor; // Transform representing the position where the agent holds the box
+
+    [Tooltip("Game object representing the box to be sorted.")]
+    [SerializeField] private GameObject boxPickupLocation;
+
+    [Tooltip("Tracks training statistics and current agent state.")]
+    [SerializeField] private DelegateData delegateData;
+
+    [Tooltip("Reference to the CellManager script for accessing dropoff locations.")]
+    [SerializeField] private GameObject cellManager;
+
+    [Tooltip("Reference to the ConveyorLogic script for conveyor operations.")]
+    [SerializeField] private GameObject conveyorGameObject;
+
+    [Tooltip("Transform representing the position where the agent holds the box.")]
+    [SerializeField] private Transform boxHoldAnchor;
 
     // ================================================================================================== \\
     private Vector3 startingPosition;
     private Quaternion startingRotation;
     private List<Vector3> dropOffLocations;
-    private Vector3 blueTargetDropOffLocation; // Position of the blue box drop-off location
-    private Vector3 redTargetDropOffLocation; // Position of the red box drop-off location
+    private Vector3 pearTargetDropOffLocation; // Position of the blue box drop-off location
+    private Vector3 appleTargetDropOffLocation; // Position of the red box drop-off location
 
     [Header("Movement")]
+
+    [Tooltip("Speed of the agent.")]
     [SerializeField] private float moveSpeed = 0.5f;
+
+    [Tooltip("Rotation speed of the agent in degrees per second.")]
     [SerializeField] private float turnSpeed = 720f;
+
+    [Tooltip("Y-axis offset applied so the model faces the movement direction correctly.")]
     [SerializeField] private float facingOffsetY = 90f;
-    
+
 
     [Header("Input System Heuristic")]
     private InputSystem_Actions controls;
 
     [Header("Observations")]
-    [SerializeField] private float maxDistance = 20f; // used to normalize distances
+
+    [Tooltip("Maximum expected distance used to normalize observation values.")]
+    [SerializeField] private float maxDistance = 20f;
+
     [Header("Visualizations")]
+
     private LineRenderer targetLine;
+
+    [Tooltip("Line colour while searching for a box.")]
     [SerializeField] private Color searchingColor = Color.yellow;
+
+    [Tooltip("Line colour while carrying a box.")]
     [SerializeField] private Color carryingColor = Color.green;
+
+    /// <summary>
+    /// Represents the current task the agent is performing.
+    /// </summary>
     public enum State
     {
         SearchingForBox,
         CarryingBox
     }
+
     public State currentState = State.SearchingForBox; // Track the current state of the agent
     private GameObject heldProduct;
     private BoxObject boxObject; // ScriptableObject containing box type and dropoff mapping
     private bool isTesting = false;  // Flag to disable pre run checks
 
+    // Invoked whenever the agent passes a carried box to another object.
     public static event Action onBoxPassed;
 
     new void Awake()
@@ -63,6 +93,9 @@ public class MLAgentScript : Agent
         }
     }
 
+    /// <summary>
+    /// Caches component references and performs startup validation.
+    /// </summary>
     public override void Initialize()
     {
         agentRigidbody = GetComponent<Rigidbody>();
@@ -86,12 +119,15 @@ public class MLAgentScript : Agent
         startingRotation = transform.localRotation;
         conveyorLogic.ResetConveyor();
         dropOffLocations = cellManagerScript.GetDropOffLocations();
-        redTargetDropOffLocation = dropOffLocations[0];
-        blueTargetDropOffLocation = dropOffLocations[1];
+        appleTargetDropOffLocation = dropOffLocations[0];
+        pearTargetDropOffLocation = dropOffLocations[1];
         
         cellManagerScript.ResetDistanceTracking();
     }
 
+    /// <summary>
+    /// Resets the environment and agent at the start of each training episode.
+    /// </summary>
     public override void OnEpisodeBegin()
     {
         ChangeState(State.SearchingForBox);
@@ -133,6 +169,9 @@ public class MLAgentScript : Agent
         controls.Disable();
     }
 
+    /// <summary>
+    /// Verifies that all required components and references are assigned.
+    /// </summary>
     bool PrerunTests()
     {
         if(GetComponent<Rigidbody>() == null)
@@ -168,7 +207,9 @@ public class MLAgentScript : Agent
         return true;
     }
 
-
+    /// <summary>
+    /// Supplies observations to the machine learning model each decision step.
+    /// </summary>
     public override void CollectObservations(VectorSensor sensor)
     {
         // Global observations.
@@ -179,8 +220,8 @@ public class MLAgentScript : Agent
         sensor.AddObservation(Vector3.Distance(transform.position, boxPickupLocation.transform.position) / maxDistance);
 
         // Always expose both drop-off locations so the policy can compare them.
-        sensor.AddObservation((redTargetDropOffLocation - transform.position) / maxDistance);
-        sensor.AddObservation((blueTargetDropOffLocation - transform.position) / maxDistance);
+        sensor.AddObservation((appleTargetDropOffLocation - transform.position) / maxDistance);
+        sensor.AddObservation((pearTargetDropOffLocation - transform.position) / maxDistance);
 
         // When a box is held, also expose the correct target drop-off.
         if (currentState == State.CarryingBox)
@@ -195,6 +236,9 @@ public class MLAgentScript : Agent
         }
     }
 
+    /// <summary>
+    /// Executes the actions produced by the trained policy.
+    /// </summary>
     public override void OnActionReceived(ActionBuffers actions) // Called when the agent receives an action from the policy or heuristic
     {
         float moveX = actions.ContinuousActions[0];
@@ -207,6 +251,9 @@ public class MLAgentScript : Agent
         cellManagerScript.ActionRecievedCall();
     }
 
+    /// <summary>
+    /// Changes the current agent state and resets distance tracking.
+    /// </summary>
     private void ChangeState(State newState) // Helper function to change the agent's state and reset relevant tracking variables for reward shaping
     {
         currentState = newState;
@@ -214,6 +261,9 @@ public class MLAgentScript : Agent
         cellManagerScript.ResetDistanceTracking();
     }
 
+    /// <summary>
+    /// Returns the position of the agent's current navigation target.
+    /// </summary>
     public Vector3 GetActiveTargetPosition()
     {
         return currentState == State.CarryingBox
@@ -221,7 +271,10 @@ public class MLAgentScript : Agent
             : boxPickupLocation.transform.position;
     }
 
-    public override void Heuristic(in ActionBuffers actionsOut) // Used for manual control of the agent during testing or debugging
+    /// <summary>
+    /// Used for manual control of the agent during testing or debugging
+    /// </summary>
+    public override void Heuristic(in ActionBuffers actionsOut)
     {
         var continuousActionsOut = actionsOut.ContinuousActions;
         
@@ -231,6 +284,11 @@ public class MLAgentScript : Agent
         continuousActionsOut[1] = inputVector.x;
     }
 
+    /// <summary>
+    /// Moves and rotates the agent based on the provided movement input.
+    /// </summary>
+    /// <param name="moveX">Horizontal movement input.</param>
+    /// <param name="moveZ">Vertical movement input.</param>
     void MoveAgent(float moveX, float moveZ) 
     {
         Vector3 moveDir = new Vector3(moveX, 0, moveZ);
@@ -260,6 +318,10 @@ public class MLAgentScript : Agent
         }
     }
 
+    /// <summary>
+    /// Handles box pickup when the agent enters the pickup trigger while searching for a box.
+    /// </summary>
+    /// <param name="collider">The trigger collider that the agent entered.</param>
     void OnTriggerEnter(Collider collider)
     {
         GameObject collidingGameObject = collider.gameObject;
@@ -284,6 +346,10 @@ public class MLAgentScript : Agent
         
     }
 
+    /// <summary>
+    /// Detects collisions with the arena boundaries and applies the corresponding penalty.
+    /// </summary>
+    /// <param name="collision">Information about the collision.</param>
     void OnCollisionEnter(Collision collision)
     {
         if(collision.gameObject.CompareTag("Bounds"))
@@ -293,6 +359,10 @@ public class MLAgentScript : Agent
         }
     }
 
+    /// <summary>
+    /// Applies a continuous penalty while the agent remains in contact with the arena boundaries.
+    /// </summary>
+    /// <param name="collision">Information about the ongoing collision.</param>
     void OnCollisionStay(Collision collision)
     {
         if(collision.gameObject.CompareTag("Bounds"))
@@ -302,6 +372,11 @@ public class MLAgentScript : Agent
         }
     }
 
+    /// <summary>
+    /// Transfers the currently held box to a new parent object and returns it.
+    /// </summary>
+    /// <param name="newParent">The transform that will become the box's new parent.</param>
+    /// <returns>The box that was being carried by the agent.</returns>
     public GameObject PassBox(Transform newParent)
     {
         onBoxPassed?.Invoke();
@@ -318,15 +393,19 @@ public class MLAgentScript : Agent
         return droppedProduct;
     }
 
+    /// <summary>
+    /// Assigns the correct drop-off target based on the type of box being carried.
+    /// </summary>
+    /// <param name="boxType">The type of box that was picked up.</param>
     void AssignDropoff(ProductIdentityEnums.Type boxType)
     {
         if(boxType == ProductIdentityEnums.Type.Apples)
         {
-            boxObject = new BoxObject(boxType) {dropOffTargetVector3 = redTargetDropOffLocation};
+            boxObject = new BoxObject(boxType) {dropOffTargetVector3 = appleTargetDropOffLocation};
         }
         else if(boxType == ProductIdentityEnums.Type.Pears)
         {
-            boxObject = new BoxObject(boxType) {dropOffTargetVector3 = blueTargetDropOffLocation};
+            boxObject = new BoxObject(boxType) {dropOffTargetVector3 = pearTargetDropOffLocation};
         }
     }
 
@@ -335,6 +414,9 @@ public class MLAgentScript : Agent
         DrawLineToTarget();
     }
 
+    /// <summary>
+    /// Configures the LineRenderer used to visualize the agent's current target.
+    /// </summary>
     private void SetupLineRenderer()
     {
         targetLine.positionCount = 2;
@@ -345,6 +427,9 @@ public class MLAgentScript : Agent
         targetLine.material = new Material(Shader.Find("Sprites/Default")); 
     }
 
+    /// <summary>
+    /// Draws a line from the agent to its current navigation target.
+    /// </summary>
     private void DrawLineToTarget()
     {
         if (targetLine == null) return;

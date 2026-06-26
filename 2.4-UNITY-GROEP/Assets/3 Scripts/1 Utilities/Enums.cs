@@ -9,4 +9,10 @@ public static class ProductIdentityEnums
         Apples = 0,
         Pears = 1,
     }
+
+    public enum State
+    {
+        SearchingForBox,
+        CarryingBox
+    }
 }

@@ -14,6 +14,7 @@ public class ConveyorLogic : MonoBehaviour
     [Tooltip("List of products currently active on the conveyor.")]
     public List<GameObject> c_Products = new List<GameObject>();
 
+    [Tooltip("DelegateData used to report the current product type to the UI.")]
     [SerializeField] private DelegateData delegateData;
 
     void Update()
@@ -22,10 +23,10 @@ public class ConveyorLogic : MonoBehaviour
     }
 
     /// <summary>
-    /// Removes the front product from the conveyor and assigns it to a target transform.
-    /// Also updates the central tracking system with the removed product.
+    /// Removes the first product from the conveyor, parents it to the given transform and returns it.
     /// </summary>
-    /// <param name="newTransform">Target transform where the product will be moved after removal.</param>
+    /// <param name="newTransform">The transform the product will be parented to after removal.</param>
+    /// <returns>The removed product GameObject.</returns>
     public GameObject RemoveFromConveyor(Transform newTransform)
     {
         GameObject product = c_Products[0];
@@ -43,6 +44,9 @@ public class ConveyorLogic : MonoBehaviour
         return product;
     }
 
+    /// <summary>
+    /// Reads the type of the next product in the queue and reports it to DelegateData for UI display.
+    /// </summary>
     public void GetCurrentProduct()
     {
         GameObject product = c_Products[0];
@@ -53,7 +57,7 @@ public class ConveyorLogic : MonoBehaviour
     }
 
     /// <summary>
-    /// Spawns a new product at the back of the conveyor line using the spawn position defined in settings.
+    /// Spawns a random product prefab at the configured spawn position and adds it to the conveyor queue.
     /// </summary>
     private void SpawnNextProduct()
     {
@@ -71,8 +75,7 @@ public class ConveyorLogic : MonoBehaviour
     }
 
     /// <summary>
-    /// Moves all active products along the conveyor towards their assigned slot positions.
-    /// Also triggers spawning when space becomes available at the back of the conveyor.
+    /// Moves all products toward their target slot each frame. Spawns a new product when the last one moves far enough forward.
     /// </summary>
     private void ForwardProducts()
     {
@@ -99,9 +102,13 @@ public class ConveyorLogic : MonoBehaviour
             SpawnNextProduct();
         }
     }
+
+
+    /// <summary>
+    /// Destroys all active conveyor products, clears the queue and spawns a fresh first product. Called at the start of each episode.
+    /// </summary>
     public void ResetConveyor()
     {
-        // 1. Loop through the list and physically destroy every product in the scene
         foreach (GameObject product in c_Products)
         {
             if (product != null)
@@ -110,10 +117,8 @@ public class ConveyorLogic : MonoBehaviour
             }
         }
 
-        // 2. Now it is safe to clear the C# tracking list
         c_Products.Clear();
 
-        // 3. Spawn the first product to restart the cycle
         SpawnNextProduct();
     }
 }

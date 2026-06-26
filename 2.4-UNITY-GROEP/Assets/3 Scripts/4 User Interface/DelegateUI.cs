@@ -39,14 +39,15 @@ public class DelegateUI : MonoBehaviour
 
     public void UpdateUI()
     {
+        if (currentDelegate == null) { return; }
+
         DelegateData data = currentDelegate.GetComponent<DelegateData>();
 
-        if(data == null ) { return; }
+        if (data == null) { return; }
 
-        succesRateText.text = data.successRate.ToString() + "%";
+        succesRateText.text = data.successRate + "%";
         succesStreakText.text = data.successStreak.ToString();
-
-        currentActionText.text = data.currentAction.ToString();
-        currentProductText.text = data.currentProduct.ToString();
+        currentActionText.text = data.currentAction;
+        currentProductText.text = data.currentProduct;
     }
 }

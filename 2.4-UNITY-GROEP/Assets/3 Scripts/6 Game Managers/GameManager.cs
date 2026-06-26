@@ -45,16 +45,9 @@ public class GameManager : MonoBehaviour
         {
             for (int c = 0; c < environmentSettings.cols; c++)
             {
-                Vector3 pos = new Vector3(
-                    r * environmentSettings.spacing,
-                    0f,
-                    c * environmentSettings.spacing);
+                Vector3 pos = new Vector3(r * environmentSettings.spacing, 0f,c * environmentSettings.spacing);
 
-                GameObject instance = Instantiate(
-                    environmentSettings.areaPrefab,
-                    pos,
-                    Quaternion.identity,
-                    parent);
+                GameObject instance = Instantiate(environmentSettings.areaPrefab, pos, Quaternion.identity, parent);
 
                 instance.name = $"{environmentSettings.areaPrefab.name}_r{r}_c{c}";
 

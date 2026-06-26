@@ -15,4 +15,4 @@ MonoBehaviour:
   areaPrefab: {fileID: 4326394818389869793, guid: 64e958b9590cee6498dca3a8f86d3d16, type: 3}
   rows: 4
   cols: 4
-  spacing: 20
+  spacing: 40

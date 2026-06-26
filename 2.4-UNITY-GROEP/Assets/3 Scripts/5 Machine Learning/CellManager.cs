@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class CellManager : MonoBehaviour
 {
-    [SerializeField] private ScoringParameters scoringParameters;
+    [SerializeField] private ScoringSettings scoringParameters;
     [SerializeField] private GameObject redDropOffLocation;
     [SerializeField] private GameObject blueDropOffLocation;
     [SerializeField] private DelegateData delegateData;

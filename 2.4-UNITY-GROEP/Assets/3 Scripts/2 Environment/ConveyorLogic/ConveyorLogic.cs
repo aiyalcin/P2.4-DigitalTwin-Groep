@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 public class ConveyorLogic : MonoBehaviour
 {
     [Tooltip("Configuration for conveyor behaviour.")]
-    [SerializeField] private ProductionInformation settings;
+    [SerializeField] private FactorySettings settings;
 
     [Tooltip("Parent transform under which all active conveyor products are organized.")]
     [SerializeField] private Transform c_ProductsRoot;

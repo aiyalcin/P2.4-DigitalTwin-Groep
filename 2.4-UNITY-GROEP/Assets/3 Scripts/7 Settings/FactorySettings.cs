@@ -1,11 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// General settings for conveyor-based production systems
-/// </summary>
-[CreateAssetMenu(fileName = "ProductionInformation", menuName = "Scriptable Objects/ProductionInformation")]
-public class ProductionInformation : ScriptableObject
+
+[CreateAssetMenu(fileName = "FactorySettings", menuName = "Settings/Factory")]
+public class FactorySettings : ScriptableObject
 {
     [Header("Conveyor Information")]
 
@@ -23,6 +21,7 @@ public class ProductionInformation : ScriptableObject
 
     [Tooltip("Distance between each product slot on the conveyor.")]
     public float slotDistance;
+
 
     [Header("Product Information")]
 

@@ -3,32 +3,23 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    [Header("Prefab & layout")]
-    [Tooltip("Prefab containing the training area and agents")]
-    public GameObject areaPrefab;
+    [Header("Environment")]
 
-    [Tooltip("Number of areas along the X axis (rows)")]
-    public int rows = 4;
+    [Tooltip("Settings for the environment.")]
+    [SerializeField] private EnvironmentSettings environmentSettings;
 
-    [Tooltip("Number of areas along the Z axis (cols)")]
-    public int cols = 4;
+    [Tooltip("The parent object the delegates are spawned under.")]
+    public Transform spawnHierarchy;
 
-    [Tooltip("Spacing between area centers")]
-    public float spacing = 20f;
+    [Tooltip("The camera manager needed to notify the camera for the locations of the delegates to view.")]
+    [SerializeField] private CameraManager cameraManager;
 
-    [Tooltip("Where in the hierarchy it exists")]
-    public Transform spawnHiearchy;
-
-    [Tooltip("The delegate that serves as an example that needs to be hidden at the start")]
-    public GameObject ogPrefab;
-
-    public static int totalDelagets = 0;
-
-    private CameraManager cameraManager;
+    [HideInInspector]
+    public static int totalDelagets = 0; // The total number of delegates (factory cells) spawned in the scene.
 
     private void Awake()
     {
-        if (areaPrefab == null)
+        if (environmentSettings.areaPrefab == null)
         {
             Debug.LogError("GameManager: areaPrefab is not assigned.");
             return;
@@ -37,27 +28,37 @@ public class GameManager : MonoBehaviour
         cameraManager = FindFirstObjectByType<CameraManager>();
 
         SpawnCells();
-        DisableOriginal();
 
-        totalDelagets = rows * cols;
+        totalDelagets = environmentSettings.rows * environmentSettings.cols;
     }
 
+    /// <summary>
+    /// Spawns a grid of factory cells based on the configured environment settings.
+    /// Each spawned cell is assigned a unique name and its CameraFocus transform,
+    /// if present, is registered with the CameraManager.
+    /// </summary>
     private void SpawnCells()
     {
-        Transform parent = spawnHiearchy != null ? spawnHiearchy : transform;
+        Transform parent = spawnHierarchy != null ? spawnHierarchy : transform;
 
-        for (int r = 0; r < rows; r++)
+        for (int r = 0; r < environmentSettings.rows; r++)
         {
-            for (int c = 0; c < cols; c++)
+            for (int c = 0; c < environmentSettings.cols; c++)
             {
-                Vector3 pos = new Vector3(r * spacing, 0f, c * spacing);
+                Vector3 pos = new Vector3(
+                    r * environmentSettings.spacing,
+                    0f,
+                    c * environmentSettings.spacing);
 
-                GameObject instance = Instantiate(areaPrefab, pos, Quaternion.identity, parent);
+                GameObject instance = Instantiate(
+                    environmentSettings.areaPrefab,
+                    pos,
+                    Quaternion.identity,
+                    parent);
 
-                instance.name = $"{areaPrefab.name}_r{r}_c{c}";
+                instance.name = $"{environmentSettings.areaPrefab.name}_r{r}_c{c}";
 
                 Transform focusParent = instance.transform.Find("SYSTEMS");
-
                 Transform focus = focusParent.transform.Find("CameraFocus");
 
                 if (focus != null)
@@ -72,14 +73,6 @@ public class GameManager : MonoBehaviour
                     Debug.LogWarning($"{instance.name} has no CameraFocus child.");
                 }
             }
-        }
-    }
-
-    private void DisableOriginal()
-    {
-        if (ogPrefab != null)
-        {
-            ogPrefab.SetActive(false);
         }
     }
 }

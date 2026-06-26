@@ -16358,12 +16358,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bcaf4ef86de13f499d227788349752c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  areaPrefab: {fileID: 2570138648766551813}
-  rows: 12
-  cols: 5
-  spacing: 25
-  spawnHiearchy: {fileID: 1921206461}
-  ogPrefab: {fileID: 2570138648766551813}
+  environmentSettings: {fileID: 11400000, guid: 8edf61d4fb5ca484c97a9ddc297241f5, type: 2}
+  spawnHierarchy: {fileID: 1921206461}
+  cameraManager: {fileID: 1580919743}
 --- !u!4 &1991399634
 Transform:
   m_ObjectHideFlags: 0

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0eb7d563e5f56fa4b990017b00316b88, type: 3}
-  m_Name: Scoring parameters
+  m_Name: ScoringSettings
   m_EditorClassIdentifier: Assembly-CSharp::ScoringParameters
   StepPenalty: -0.001
   WrongBoxDeliveryPenalty: -1

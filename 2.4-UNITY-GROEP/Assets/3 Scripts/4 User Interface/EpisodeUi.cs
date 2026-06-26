@@ -8,7 +8,7 @@ public class EpisodeUi : MonoBehaviour
     [SerializeField] private TextMeshProUGUI episodeCountText;
     private float episodeCount = 0;
 
-    [SerializeField] private ScoringParameters scoringParameters;
+    [SerializeField] private ScoringSettings scoringParameters;
     [SerializeField] private Scrollbar episodeProgressionScroll;
     private int score = 0;
 

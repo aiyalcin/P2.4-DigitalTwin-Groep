@@ -10,18 +10,17 @@ public class DropoffZoneScript : MonoBehaviour
     private GameObject heldBox;
     
     private bool isOccupied = false;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+
     void Start()
     {
         cellManagerScript = CellManager.GetComponent<CellManager>();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="boxType"></param>
+    /// <returns></returns>
     public bool CheckDropoff(ProductIdentityEnums.Type boxType)
     {
         if (boxType == identity)
@@ -31,6 +30,9 @@ public class DropoffZoneScript : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public void ClearBox()
     {
         if (isOccupied && heldBox != null)
@@ -41,6 +43,10 @@ public class DropoffZoneScript : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="collider"></param>
     void OnTriggerEnter(Collider collider)
     {
         GameObject obj = collider.gameObject;

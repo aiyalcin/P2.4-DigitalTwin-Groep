@@ -94,7 +94,6 @@ public class MLAgentScript : Agent
 
     public override void OnEpisodeBegin()
     {
-        Debug.Log("Episode Began!");
         ChangeState(State.SearchingForBox);
 
         if (agentRigidbody != null)
@@ -321,11 +320,11 @@ public class MLAgentScript : Agent
 
     void AssignDropoff(ProductIdentityEnums.Type boxType)
     {
-        if(boxType == ProductIdentityEnums.Type.Red)
+        if(boxType == ProductIdentityEnums.Type.Apples)
         {
             boxObject = new BoxObject(boxType) {dropOffTargetVector3 = redTargetDropOffLocation};
         }
-        else if(boxType == ProductIdentityEnums.Type.Blue)
+        else if(boxType == ProductIdentityEnums.Type.Pears)
         {
             boxObject = new BoxObject(boxType) {dropOffTargetVector3 = blueTargetDropOffLocation};
         }

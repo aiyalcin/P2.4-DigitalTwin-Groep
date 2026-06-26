@@ -6,7 +6,7 @@ public static class ProductIdentityEnums
     /// </summary>
     public enum Type
     {
-        Red = 0,
-        Blue = 1,
+        Apples = 0,
+        Pears = 1,
     }
 }
